@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "##",
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": "minecraft:mangrove_planks"
+  },
+  "result": {
+    "id": "more-doors-justfatlard:mangrove_door",
+    "count": 3
+  }
+}

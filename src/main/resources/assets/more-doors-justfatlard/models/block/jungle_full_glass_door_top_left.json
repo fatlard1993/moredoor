@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_top_left",
+  "textures": {
+    "bottom": "more-doors-justfatlard:block/jungle_full_glass_door_bottom",
+    "top": "more-doors-justfatlard:block/jungle_full_glass_door_top"
+  }
+}

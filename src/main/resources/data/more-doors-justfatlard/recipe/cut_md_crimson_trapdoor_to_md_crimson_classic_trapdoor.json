@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "more-doors-justfatlard:crimson_trapdoor",
+  "result": {
+    "id": "more-doors-justfatlard:crimson_classic_trapdoor",
+    "count": 1
+  }
+}

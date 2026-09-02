@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "##",
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": "minecraft:bamboo_planks"
+  },
+  "result": {
+    "id": "more-doors-justfatlard:bamboo_door",
+    "count": 3
+  }
+}

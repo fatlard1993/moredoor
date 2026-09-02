@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "##",
+    "o#",
+    "##"
+  ],
+  "key": {
+    "#": "minecraft:warped_planks",
+    "o": "minecraft:glass_pane"
+  },
+  "result": {
+    "id": "more-doors-justfatlard:warped_glass_door",
+    "count": 3
+  }
+}

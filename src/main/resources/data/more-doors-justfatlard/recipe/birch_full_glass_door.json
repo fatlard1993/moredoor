@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "#o",
+    "#o",
+    "#o"
+  ],
+  "key": {
+    "#": "minecraft:birch_planks",
+    "o": "minecraft:glass_pane"
+  },
+  "result": {
+    "id": "more-doors-justfatlard:birch_full_glass_door",
+    "count": 3
+  }
+}

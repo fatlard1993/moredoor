@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "more-doors-justfatlard:item/acacia_barred_door"
+  }
+}

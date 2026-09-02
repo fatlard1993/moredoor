@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "###",
+    "# #"
+  ],
+  "key": {
+    "#": "minecraft:jungle_planks"
+  },
+  "result": {
+    "id": "more-doors-justfatlard:jungle_classic_trapdoor",
+    "count": 2
+  }
+}

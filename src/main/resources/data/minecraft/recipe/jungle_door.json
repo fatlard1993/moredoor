@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "##",
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": "minecraft:jungle_planks"
+  },
+  "result": {
+    "id": "more-doors-justfatlard:jungle_door",
+    "count": 3
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "more-doors-justfatlard:spruce_full_barred_trapdoor"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "more-doors-justfatlard:blocks/spruce_full_barred_trapdoor"
+}

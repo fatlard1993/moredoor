@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "###",
+    "# #"
+  ],
+  "key": {
+    "#": "minecraft:warped_planks"
+  },
+  "result": {
+    "id": "more-doors-justfatlard:warped_classic_trapdoor",
+    "count": 2
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "more-doors-justfatlard:bamboo_full_glass_door"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "more-doors-justfatlard:blocks/bamboo_full_glass_door"
+}

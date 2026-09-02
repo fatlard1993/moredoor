@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "more-doors-justfatlard:item/jungle_full_barred_door"
+  }
+}

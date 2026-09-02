@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "###",
+    "ooo"
+  ],
+  "key": {
+    "#": "minecraft:pale_oak_planks",
+    "o": "minecraft:glass_pane"
+  },
+  "result": {
+    "id": "more-doors-justfatlard:pale_oak_full_glass_trapdoor",
+    "count": 2
+  }
+}

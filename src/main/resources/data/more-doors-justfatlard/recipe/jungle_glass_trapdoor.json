@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "###",
+    "#o#"
+  ],
+  "key": {
+    "#": "minecraft:jungle_planks",
+    "o": "minecraft:glass_pane"
+  },
+  "result": {
+    "id": "more-doors-justfatlard:jungle_glass_trapdoor",
+    "count": 2
+  }
+}
