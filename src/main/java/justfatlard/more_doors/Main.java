@@ -15,6 +15,9 @@ public class Main implements ModInitializer {
 	public void onInitialize() {
 		MoreDoors.register();
 		DoorInteraction.register();
+		DoorSwing.init();
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents.LOAD.register(
+			(server, level) -> DoorSwings.get(level).remark(level));
 
 		net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback.EVENT.register(
 			(dispatcher, registry, environment) -> DoorCommands.register(dispatcher));
@@ -22,14 +25,6 @@ public class Main implements ModInitializer {
 		if (PandoricalApi.isAvailable()) {
 			syncClientAssets();
 		}
-
-		// Gates in flight. Cheap when none are: the tick returns on an empty map.
-		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_LEVEL_TICK.register(
-			BigDoor::tick);
-
-		// Nothing is allowed to stop while a gate is still a hole with its blocks in memory.
-		net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents.UNLOAD.register(
-			(server, world) -> BigDoor.landAll(world));
 
 		System.out.println("[" + MOD_ID + "] Loaded");
 	}
@@ -52,6 +47,11 @@ public class Main implements ModInitializer {
 		for (var door : MoreDoors.DOORS.entrySet()) {
 			PandoricalApi.content().registerBlock(MOD_ID + ":" + door.getKey(),
 				new BlockRegistration().baseBlock("minecraft:oak_door")
+					// The server answers every click on a door: the bank, the lock, the turn. A
+					// client left to guess predicted placing whatever it held against the door
+					// while the server swung the door instead, and the held item vanished from
+					// the hotbar until the next inventory sync.
+					.interactive()
 					.model(MOD_ID + ":block/" + door.getKey() + "_bottom_left"));
 			PandoricalApi.content().registerItem(MOD_ID + ":" + door.getKey(),
 				new ItemRegistration().model(MOD_ID + ":item/" + door.getKey()));
@@ -59,6 +59,7 @@ public class Main implements ModInitializer {
 		for (var trap : MoreDoors.TRAPDOORS.entrySet()) {
 			PandoricalApi.content().registerBlock(MOD_ID + ":" + trap.getKey(),
 				new BlockRegistration().baseBlock("minecraft:oak_trapdoor")
+					.interactive()
 					.model(MOD_ID + ":block/" + trap.getKey() + "_bottom"));
 			PandoricalApi.content().registerItem(MOD_ID + ":" + trap.getKey(),
 				new ItemRegistration().model(MOD_ID + ":item/" + trap.getKey()));

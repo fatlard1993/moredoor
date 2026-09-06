@@ -97,6 +97,17 @@ public final class DoorLocks extends SavedData {
 	}
 
 	/** The name on whichever leaf is locked, for telling the refused player who to ask. */
+	/** Whether any of these squares carries a lock that keeps this player out. */
+	public boolean refusesAny(ServerPlayer player, Iterable<BlockPos> squares) {
+		if (player.permissions().hasPermission(
+			net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) return false;
+		for (BlockPos square : squares) {
+			Lock lock = lockAt(square);
+			if (lock != null && !lock.admits(player.getUUID())) return true;
+		}
+		return false;
+	}
+
 	public String lockedBy(ServerLevel level, BlockPos pos, BlockState state) {
 		for (BlockPos leaf : DoorBank.leavesOf(level, pos, state)) {
 			Lock lock = lockAt(leaf);
@@ -138,6 +149,16 @@ public final class DoorLocks extends SavedData {
 	}
 
 	/** Forget one block's lock, for when that block stops existing. */
+	/** A leaf that swung somewhere else takes its lock with it. */
+	public void move(BlockPos from, BlockPos to) {
+		if (from.equals(to)) return;
+		Lock lock = this.locks.remove(from.asLong());
+		if (lock != null) {
+			this.locks.put(to.asLong(), lock);
+			this.setDirty();
+		}
+	}
+
 	public void forget(BlockPos pos) {
 		if (this.locks.remove(pos.asLong()) != null) this.setDirty();
 	}

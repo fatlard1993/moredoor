@@ -41,7 +41,38 @@ public final class DoorCommands {
 					.executes(context -> share(context.getSource(),
 						GameProfileArgument.getGameProfiles(context, "player"), false))))
 			.then(Commands.literal("unlock")
-				.executes(context -> unlock(context.getSource()))));
+				.executes(context -> unlock(context.getSource())))
+			// For operators and test rigs: hang the door at a position without the menu.
+			.then(Commands.literal("hang")
+				.requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
+				.then(Commands.argument("pos", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+					.then(Commands.argument("swing", com.mojang.brigadier.arguments.StringArgumentType.word())
+						.executes(context -> hang(context.getSource(),
+							net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(context, "pos"),
+							com.mojang.brigadier.arguments.StringArgumentType.getString(context, "swing")))))));
+	}
+
+	private static int hang(CommandSourceStack source, BlockPos pos, String swingName) {
+		ServerLevel level = source.getLevel();
+		BlockState state = level.getBlockState(pos);
+		if (!(state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock)) {
+			source.sendFailure(Component.translatable("more-doors-justfatlard.command.no_door"));
+			return 0;
+		}
+		Swing swing;
+		try {
+			swing = Swing.parse(swingName.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			source.sendFailure(Component.literal("swing: left, right, slide_left, slide_right, slide_up, slide_down"));
+			return 0;
+		}
+		BlockPos foot = DoorBank.footOf(pos, state);
+		DoorGroup group = DoorGroup.at(level, foot);
+		for (BlockPos leaf : group != null ? group.feet() : java.util.List.of(foot)) {
+			SwingMenu.hang(level, leaf, swing, null);
+		}
+		source.sendSuccess(() -> Component.literal("hung " + swing.name().toLowerCase()), true);
+		return 1;
 	}
 
 	private static int share(CommandSourceStack source,

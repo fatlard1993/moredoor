@@ -316,6 +316,10 @@ def is_ironmongery(px, wood_hue):
     hue, sat = hue_sat(px)
     if sat < 0.12:
         return True
+    # No timber is this saturated; brass is, and a brass handle's darker pixel sits close
+    # enough to a wood's hue to pass the test below.
+    if sat > 0.9:
+        return True
 
     gap = abs(hue - wood_hue)
     return min(gap, 360 - gap) > 20 and sat > 0.20
@@ -332,10 +336,14 @@ def recolour(face, source_planks, target_planks):
     ramp = ramp_of(target_planks)
     wood_hue = hue_sat(tones(source_planks, keep=1)[0])[0]
 
-    lit = [luminance(px) for row in face for px in row if px[3]]
+    # The range is the timber's, read between its second and ninety-eighth percentiles. One
+    # stray bright pixel - a handle's edge, a highlight - used to set the top of the range on
+    # its own, and with dark oak's it pushed every board into the bottom quarter, so every
+    # solid door came out a third too dark.
+    lit = sorted(luminance(px) for row in face for px in row if px[3] and not is_ironmongery(px, wood_hue))
     if not lit:
         return face
-    low, high = min(lit), max(lit)
+    low, high = lit[int(0.02 * (len(lit) - 1))], lit[int(0.98 * (len(lit) - 1))]
     span = (high - low) or 1.0
 
     for y, row in enumerate(face):
@@ -496,13 +504,18 @@ def faces_for(material, variant, shapes, glass, bars):
 
 
 def door_item(top, bottom):
-    """The door as carried: the two halves stacked into one narrow sprite."""
+    """The door as carried: both halves shrunk into one sprite at vanilla's size.
+
+    Vanilla draws a door item ten wide and fourteen tall, two rows down from the top. The
+    whole face is sampled into that, so the frame's outer edges survive; taking the middle
+    columns instead cut the stiles off both sides.
+    """
     sprite = [[CLEAR] * 16 for _ in range(16)]
-    for y in range(16):
-        source = top if y < 8 else bottom
-        row = source[(y * 2) % 16]
-        for x in range(4, 12):
-            sprite[y][x] = row[x]
+    face = list(top) + list(bottom)
+    for r in range(14):
+        row = face[min(31, int((r + 0.5) * 32 / 14))]
+        for c in range(10):
+            sprite[2 + r][3 + c] = row[min(15, int((c + 0.5) * 16 / 10))]
     return sprite
 
 

@@ -3,7 +3,9 @@
   "package": "justfatlard.more_doors.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "FenceConnectionMixin"
+    "FenceConnectionMixin",
+    "DoorStackMixin",
+    "DoorSwingMixin"
   ],
   "injectors": {
     "defaultRequire": 1

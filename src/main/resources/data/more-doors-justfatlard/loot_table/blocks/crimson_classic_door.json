@@ -2,16 +2,23 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "rolls": 1.0,
       "condition": {
         "type": "minecraft:survives_explosion"
       },
       "entries": [
         {
           "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "more-doors-justfatlard:crimson_classic_door",
+            "state": {
+              "half": "lower"
+            }
+          },
           "name": "more-doors-justfatlard:crimson_classic_door"
         }
-      ]
+      ],
+      "rolls": 1
     }
   ],
   "random_sequence": "more-doors-justfatlard:blocks/crimson_classic_door"

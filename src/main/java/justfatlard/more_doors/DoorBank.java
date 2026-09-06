@@ -40,6 +40,12 @@ public final class DoorBank {
 		if (!(state.getBlock() instanceof DoorBlock)) return Set.of();
 
 		BlockPos foot = footOf(pos, state);
+		// An upper half over something that is not its lower half is half a door, and half a
+		// door is nobody's bank; walking from it read a facing off air.
+		if (!(level.getBlockState(foot).getBlock() instanceof DoorBlock)) return Set.of();
+		// A leaf cut loose opens on its own, and nobody's opening reaches it.
+		DoorSwings swings = level instanceof net.minecraft.server.level.ServerLevel server ? DoorSwings.get(server) : null;
+		if (swings != null && swings.isDetached(foot)) return Set.of(foot);
 		Set<BlockPos> found = new LinkedHashSet<>();
 		Set<BlockPos> seen = new HashSet<>();
 		Deque<BlockPos> pending = new ArrayDeque<>();
@@ -57,7 +63,7 @@ public final class DoorBank {
 				for (BlockPos next : new BlockPos[] {at.relative(step), at.relative(step).above(2),
 						at.relative(step).below(2)}) {
 					if (!seen.add(next)) continue;
-					if (!joins(level, next, here)) continue;
+					if (!joins(level, next, here) || (swings != null && swings.isDetached(next))) continue;
 
 					found.add(next);
 					pending.add(next);
@@ -66,7 +72,7 @@ public final class DoorBank {
 
 			for (BlockPos next : new BlockPos[] {at.above(2), at.below(2)}) {
 				if (!seen.add(next)) continue;
-				if (!joins(level, next, here)) continue;
+				if (!joins(level, next, here) || (swings != null && swings.isDetached(next))) continue;
 
 				found.add(next);
 				pending.add(next);

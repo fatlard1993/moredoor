@@ -1,6 +1,5 @@
 package justfatlard.more_doors;
 
-import java.util.Set;
 
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -19,6 +18,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.phys.BlockHitResult;
@@ -29,6 +29,8 @@ public final class DoorInteraction {
 
 	public static void register() {
 		UseBlockCallback.EVENT.register(DoorInteraction::onUseBlock);
+		GateBank.register();
+		SwingMenu.register();
 
 		// A locked door is no more breakable than it is openable. Without this the lock is a
 		// suggestion: anybody refused at the handle simply takes the door off its hinges.
@@ -44,10 +46,16 @@ public final class DoorInteraction {
 			return false;
 		});
 
-		// And a door that is gone is not locked any more.
+		// And a door that is gone is not locked any more, nor hung any way, nor open.
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
-			if (level instanceof ServerLevel serverLevel && state.getBlock() instanceof DoorBlock) {
-				DoorLocks.get(serverLevel).forget(DoorBank.footOf(pos, state));
+			if (!(level instanceof ServerLevel serverLevel)) return;
+			DoorSwings swings = DoorSwings.get(serverLevel);
+			DoorSwings.OpenDoor open = swings.openAt(pos);
+			if (open != null) swings.clearOpen(open);
+			if (state.getBlock() instanceof DoorBlock) {
+				BlockPos foot = DoorBank.footOf(pos, state);
+				DoorLocks.get(serverLevel).forget(foot);
+				swings.forgetSetting(serverLevel, foot);
 			}
 		});
 	}
@@ -59,10 +67,14 @@ public final class DoorInteraction {
 
 		BlockPos pos = hit.getBlockPos();
 		BlockState state = serverLevel.getBlockState(pos);
-		if (!(state.getBlock() instanceof DoorBlock door)) return InteractionResult.PASS;
 
-		// Mid-swing the door is a picture and its blocks are gone; there is nothing here to grab.
-		if (BigDoor.isSwinging(DoorBank.footOf(pos, state))) return InteractionResult.SUCCESS;
+		if (!(state.getBlock() instanceof DoorBlock door)) return InteractionResult.PASS;
+		// Only doors that are doors. A subclass has a use of its own - the amethyst door is a way
+		// into somebody's geode - and swinging it here would answer the click before it could.
+		if (door.getClass() != DoorBlock.class) return InteractionResult.PASS;
+
+		// Mid-bounce, the door is nobody's to touch.
+		if (DoorSwing.isMoving(serverLevel, pos)) return InteractionResult.SUCCESS;
 
 		DoorLocks locks = DoorLocks.get(serverLevel);
 		if (locks.refuses(opener, serverLevel, pos, state)) {
@@ -80,11 +92,21 @@ public final class DoorInteraction {
 			return turn(serverLevel, opener, pos, state);
 		}
 
+		// A sneaking empty hand asks how the door hangs. Main hand only: the same click reaches
+		// here once per hand, and the menu should open once.
+		if (player.isSecondaryUseActive() && held.isEmpty() && hand == InteractionHand.MAIN_HAND) {
+			SwingMenu.open(opener, pos, state);
+			return InteractionResult.SUCCESS;
+		}
+
 		// A door that does not open by hand still does not, and a sneaking player is reaching
 		// past the door for whatever is in their hand.
 		if (!door.type().canOpenByHand() || player.isSecondaryUseActive()) return InteractionResult.PASS;
 
-		swingBank(serverLevel, opener, pos, state, door);
+		swingBank(serverLevel, opener, pos, state, !isOpen(serverLevel, pos, state));
+		// A vanilla client, or one that guessed, may have predicted placing what it holds. Its
+		// stack did not change here; say so, or the hotbar shows one fewer until it next syncs.
+		if (!player.getItemInHand(hand).isEmpty()) opener.containerMenu.sendAllDataToRemote();
 		return InteractionResult.SUCCESS;
 	}
 
@@ -102,29 +124,63 @@ public final class DoorInteraction {
 		return InteractionResult.SUCCESS;
 	}
 
-	/** The whole bank swings, because the whole bank is one door. */
-	private static void swingBank(ServerLevel level, ServerPlayer opener, BlockPos pos,
-			BlockState state, DoorBlock door) {
-		boolean opening = !state.getValue(DoorBlock.OPEN);
-		Set<BlockPos> bank = DoorBank.leavesOf(level, pos, state);
+	/**
+	 * The whole bank opens, because the whole bank is one door.
+	 *
+	 * <p>The clicked leaf goes through vanilla's own open, sound and all; its neighbours change
+	 * state with it, silently, so a bank of six is one door sound and not six on top of each
+	 * other. An earlier version lifted the bank out of the world and turned it as one structure;
+	 * it turned about the wrong axis, and a door that spins is worse than a door that flips.
+	 * Nothing here is different from vanilla except that the neighbours come along.
+	 */
+	/**
+	 * Whether this door stands open: by the door, not by the block. A slid door's blocks say
+	 * closed while the door stands open a room away, and the record is what knows.
+	 */
+	public static boolean isOpen(ServerLevel level, BlockPos pos, BlockState state) {
+		DoorGroup group = DoorGroup.at(level, DoorBank.footOf(pos, state));
+		return group != null ? group.open : state.getValue(DoorBlock.OPEN);
+	}
 
-		// A gate is lifted out and turned as one object. A single door is not: vanilla's own
-		// instant swing looks better than a production, and costs nothing.
-		if (BigDoor.swing(level, bank, opening)) {
-			level.playSound(null, pos, opening ? door.type().doorOpen() : door.type().doorClose(),
-				SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
-			return;
-		}
+	/** Open or close every door that moves with this one; the opener, if there is one, hears about a slide that cannot. */
+	public static void swingBank(ServerLevel level, ServerPlayer opener, BlockPos pos, BlockState state, boolean opening) {
+		BlockPos clicked = DoorBank.footOf(pos, state);
 
-		for (BlockPos leaf : bank) {
+		// The bank is every door that opens with this one; each of those is a door of its own,
+		// swung whole. The one clicked makes the sound; the rest come along quietly. A leaf that
+		// belongs to no rectangle - a stray beside a proper door - just turns where it stands.
+		java.util.Set<BlockPos> done = new java.util.HashSet<>();
+		java.util.List<BlockPos> order = new java.util.ArrayList<>();
+		order.add(clicked);
+		order.addAll(DoorBank.leavesOf(level, pos, state));
+		boolean sound = true;
+		for (BlockPos leaf : order) {
+			if (done.contains(leaf)) continue;
 			BlockState leafState = level.getBlockState(leaf);
-			if (!(leafState.getBlock() instanceof DoorBlock leafDoor)) continue;
-
-			leafDoor.setOpen(opener, level, leafState, leaf, opening);
+			if (!(leafState.getBlock() instanceof DoorBlock)) continue;
+			DoorGroup group = DoorGroup.at(level, leaf);
+			if (group == null) {
+				done.add(leaf);
+				if (leafState.getValue(DoorBlock.OPEN) == opening) continue;
+				level.setBlock(leaf, leafState.setValue(DoorBlock.OPEN, opening), Block.UPDATE_CLIENTS | Block.UPDATE_NEIGHBORS);
+				BlockState upper = level.getBlockState(leaf.above());
+				if (upper.getBlock() instanceof DoorBlock) {
+					level.setBlock(leaf.above(), upper.setValue(DoorBlock.OPEN, opening), Block.UPDATE_CLIENTS | Block.UPDATE_NEIGHBORS);
+				}
+				level.gameEvent(opener, opening ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, leaf);
+				continue;
+			}
+			// Every square the door has now, not the feet it would have closed: a slid door's
+			// leaves stand a room from home, and the walker lists those, not home.
+			done.addAll(group.squares(group.open));
+			done.addAll(group.feet());
+			if (!DoorSwing.set(level, opener, group, opening, sound) && group.swing.isSlide() && opener != null) {
+				// A hinged door that hits something bounces, which is its own message. A slide
+				// that hits something never moves, so it has to be said.
+				opener.sendOverlayMessage(Component.translatable("more-doors-justfatlard.swing.no_room"));
+			}
+			sound = false;
 		}
-
-		level.playSound(null, pos, opening ? door.type().doorOpen() : door.type().doorClose(),
-			SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
 	}
 
 	/**

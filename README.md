@@ -84,43 +84,102 @@ through.
 locked one is simply the way in. And a locked door cannot be broken by anyone but its owner - without
 that the lock is a suggestion, and anybody refused at the handle just takes it off its hinges.
 
-## Doors That Swing Together
+## A Door Is Made Of Squares
 
-A double door is two doors everyone already treats as one, and vanilla makes you open both. Widen
-that and a gatehouse is a bank of six that swing at once.
+A door block is two squares with their joining and their hinge encoded in it, and that is the
+whole model: build squares into a rectangle and you have built a door. Squares of one kind, hung on
+the same side, standing in a full rectangle are one door, whatever its size. A leaf placed against a
+door takes the door's hinge, so a door grows the way it was started, and a leaf that breaks the
+rectangle - one missing from a corner, one hung the other way - is a door of its own.
 
-Connected means touching side to side, facing the same way, **and the same block**. That last one
-matters: an oak door beside an iron one is two doors that happen to be adjacent, and swinging the
-iron one because somebody opened the oak one would be a way through a locked gate.
+**Sneak while placing** a leaf against a door and it hangs the way vanilla would hang it, which
+beside one door is on the other side: a double door, two leaves meeting in the middle. The two are
+two doors, each swinging about its own hinge, and they open together the way any doors standing
+side by side do.
 
-And a bank does not flip: it swings. Six doors all changing their `open` state on the same tick is
-six doors doing the same thing at the same moment, which is not what a gate looks like. So the whole
-bank is lifted out of the world, handed over as **one moving object**, turned about its hinge post,
-and set back down open. The blocks are described relative to the hinge, which is the entire trick -
-a structure turns about its own origin, so putting the origin on the hinge is what makes the turn
-read as a swing rather than a slide. Big-boats does the same thing about a ship's helm.
+**Sneak and right-click a door with an empty hand** to change how it moves. Two rows of pictures,
+the one it is now lit and the words for each under the pointer. The top row is the block seen from
+above with you at the bottom of it: a leaf along the near edge or the far one, hung from its left
+corner or its right, the four corners a door can hang from. The bottom row is a leaf sliding left,
+right, up or down, and beside them one more that moves the door to the other face of its block: a
+slide pulled to the far edge instead of the near, a hinged leaf swung the other way about the same
+corner. The answer is for the whole door.
 
-**The bigger it is, the slower it goes.** Not a flourish - the far edge of a wide gate has much
-further to travel than the far edge of a narrow one, so turning both in the same time means the big
-gate's edge is whipping along several times faster. A heavy thing that whips is the one cue that
-reads as fake however good the model is, so instead the edge is held to a constant speed and the
-clock stretches to match. A double door claps shut in half a second; a six-wide gatehouse takes a
-second and a half; anything grander is capped at two and a half, past which weight turns into a
-wait. The measure is width out from the hinge, not door count - stacking a bank three doors high
-adds nothing to how far the edge travels, so it swings like the double door it is.
+When other leaves stand against the one clicked, two buttons below, each shown when it applies,
+and both when both do. A leaf that is part of a door with them can be disconnected: a cut-loose leaf is a door of its own, opening,
+swinging and drawn with its own frame whatever the leaves beside it agree on, and nobody's click on
+the leaves beside it reaches it. That is for a leaf that must stay put; a double door does not need
+it. When leaves stand together with it that are not part of its door - cut loose, hung another
+way, facing the other way, put in turned a quarter round - autoconnect: every leaf standing together there is closed,
+turned and hung the way the biggest door among them hangs, and joined into one door, if together
+they make a rectangle.
 
-A single door does not get this. Vanilla's instant swing already looks right for one leaf, and a
-production costs more than it buys.
+Doors hang from a side. Hanging from the top or the bottom is what a trapdoor is, and trapdoors
+stay trapdoors.
 
-While it swings the doorway is genuinely open - the real blocks are gone for those ten ticks and
-what you see is the moving picture. Walking through a gate a tick before it finishes is a smaller
-lie than a gate that looks open and stops you.
+**A sliding door goes along its own plane by its own size:** sideways like a barn door, up like a
+shutter, or down into the floor. It stays a door the whole way, so a slid door is drawn and walked
+through exactly as a closed one standing there. It needs the space it slides into to be clear: a
+door set into a doorway has wall on every side and cannot slide anywhere, so hang a sliding door on
+the face of the wall instead, the way a barn door hangs, or leave it a pocket. A slide with nowhere
+to go stays put and says so.
+
+**A wide door swings as a door.** Blocks turn about their own edge and nothing else, which is why a
+wide door made of blocks never read as one. So a door wider than one leaf is moved when it swings:
+it hangs from its hinge column, and every other leaf goes to the block it really sweeps to, the same
+distance out from the hinge as it stood along the wall. Collision, light and the way through all
+agree with what is drawn. A door that swings into something goes as far as that and bounces back:
+the leaves before the obstruction go out, the struck block sounds and sheds dust, and a moment later
+the door is closed again. A door one leaf wide swings in place, exactly as it always did, so a
+vanilla door is unchanged.
+
+**Doors side by side open together.** Touching, facing the same way and the same block: a double
+door is two doors everyone already treats as one, and a gatehouse can be a row of them. The leaf
+you click makes the sound; the rest come along quietly. A door beside an iron one is two doors that
+happen to be adjacent, and opening the iron one because somebody opened the oak one would be a way
+through a locked gate.
+
+A door can be tall as well as wide. A door stands on a door here, which vanilla never allowed:
+sneak and place one on the top of another and it takes.
+
+**Trapdoors in a rectangle are one trapdoor.** Trapdoors of one kind lying at the same height, or
+standing open against the same wall, and filling a rectangle, are drawn as one hatch or one
+shutter: the frame round the outside, the sheet's interior stretched across the inside. No new
+block and nothing to set up; lay them and they join.
+
+**Drawn as one door.** The frame goes round the outside: stiles down the rectangle's edges, rails
+along its top and bottom, and one handle, at the swinging edge of the bottom row at the height a
+handle sits on any door. Inside it the sheet's interior is stretched across each leaf and its
+panels repeat, so a two-by-two bank of oak doors reads as one tall wide oak door rather than four
+small ones. Every leaf but the one with the handle is drawn from a copy of its sheet with the
+painted handle taken off - found by being the one thing on the swinging side that the hinge side
+of the same row never shows, so grey, brass, lighter wood and darker wood all count - and filled
+from the wood beside it. Pandorical clients see it; vanilla clients see the leaves.
+
+**Redstone reaches the whole door.** A signal at any square opens or closes all of it. A leaf
+that has moved away from its lever cannot hear it switch off, so power a door at the column that
+stays put - the hinge column - or take the signal to where the door is when open.
 
 ## Doors Connect To Fences
 
 A fence line running into a gate used to stop a block short, with a post standing on its own beside
 the doorway. Fences and walls now treat a door as something to connect to, so a fenced enclosure
 with a gate in it reads as one continuous line.
+
+Where a fence meets a door, the door gets a jamb: a post at its edge where the fence arm
+arrives and two short rails across to the panel, in the planks of the door's wood and cut from
+the same strips of them a fence is, so beside a fence of that wood it reads as the fence
+carried on. It stands as tall as the fence: a fence one high jambs the lower half only, and a
+fence stacked two high jambs both. Without it the arm stopped a half block short of the panel
+and the gap showed. Pandorical clients see it; vanilla clients see the gap.
+
+## Large Gates
+
+Fence gates side by side, or stacked, open as one: use any gate in the block and the whole
+block takes its state, facing away from you the way a single gate does. On Pandorical clients a
+row is drawn as one wide gate, the shared posts gone and the bars running through, each end
+swinging from its own remaining post with a clear span between; a stack is drawn as one tall
+gate, the posts running the whole height rather than stopping at every storey.
 
 ## Turning A Door In Place
 
@@ -131,24 +190,15 @@ that is what you would reach for.
 
 ## Pandorical
 
-More Doors registers its door blocks and the depth models through Pandorical's content sync, and a
-bank of doors swinging together is drawn as one moving structure through Pandorical's structures.
+More Doors registers its door blocks and the depth models through Pandorical's content sync.
 
-**The Pandorical mod must be installed client-side** to see the depth, the locks' models and the
-swing. Without it the doors still open, lock and swing together, but a client sees them as flat
-vanilla doors and a bank opens in one step.
+**The Pandorical mod must be installed client-side** to see the depth, the locks' models, the
+joined gates and the jambs. Without it the doors still open, lock and open together, but a client
+sees them as flat vanilla doors.
 
-## Installation
+## Development
 
-Install server-side alongside its declared dependencies (see `fabric.mod.json`); connecting clients
-need only Pandorical. Version targets live in `gradle.properties` (Minecraft, loader, Fabric API) and
-`fabric.mod.json` (Java).
-
-## Art
-
-`generate_icon.py`, `generate_textures.py`, `generate_door_models.py`, `generate_recipes.py` and
-`generate_assets.py` cut the mod's art and data out of the vanilla jar. All are deterministic; re-run
-them after a Minecraft version bump.
+Installing and the art pipeline are in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
 

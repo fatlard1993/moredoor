@@ -21,6 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 NS = "more-doors-justfatlard"
 ASSETS = os.path.join(HERE, "src/main/resources/assets", NS)
 DATA = os.path.join(HERE, "src/main/resources/data", NS)
+MINECRAFT_DATA = os.path.join(HERE, "src/main/resources/data/minecraft")
 
 # Kept in step with DoorMaterials.java by hand, which is the one duplication here: the mod reads
 # these off the block registry at runtime and a build script cannot.
@@ -117,36 +118,92 @@ def item(name, model):
 
 
 def loot(name):
-    """A door drops itself; the two halves are one drop, which vanilla handles by the half check."""
+    """A block drops itself. A door is two blocks and one drop: only its lower half pays out.
+
+    The shape is the game's own for its doors: one condition object per pool or entry, and the
+    half read with match_block. A conditions list, the older shape, loads without complaint and
+    without effect, and a door that way drops one per half.
+    """
+    entry = {"type": "minecraft:item", "name": "%s:%s" % (NS, name)}
+    if name.endswith("_door"):
+        entry = {"type": "minecraft:item",
+                 "condition": {"type": "minecraft:match_block", "blocks": "%s:%s" % (NS, name),
+                               "state": {"half": "lower"}},
+                 "name": "%s:%s" % (NS, name)}
     write("%s/loot_table/blocks/%s.json" % (DATA, name), {
         "type": "minecraft:block",
         "pools": [{
-            "rolls": 1.0,
             "condition": {"type": "minecraft:survives_explosion"},
-            "entries": [{"type": "minecraft:item", "name": "%s:%s" % (NS, name)}],
+            "entries": [entry],
+            "rolls": 1,
         }],
         "random_sequence": "%s:blocks/%s" % (NS, name),
     })
 
 
+def tags(names):
+    """The game's own tags, so its doors and trapdoors are doors and trapdoors to the game too:
+    an axe is the tool for them, and anything that looks for a door - a villager, a zombie, a
+    command - finds them."""
+    doors = [n for n in names if n.endswith("_door")]
+    trapdoors = [n for n in names if n.endswith("_trapdoor")]
+    for kind in ("block", "item"):
+        for tag, values in (("doors", doors), ("wooden_doors", doors),
+                            ("trapdoors", trapdoors), ("wooden_trapdoors", trapdoors)):
+            write("%s/tags/%s/%s.json" % (MINECRAFT_DATA, kind, tag),
+                  {"replace": False, "values": ["%s:%s" % (NS, n) for n in values]})
+    write("%s/tags/block/mineable/axe.json" % MINECRAFT_DATA,
+          {"replace": False, "values": ["%s:%s" % (NS, n) for n in names]})
+
+
+def advancement(name):
+    """The recipe's unlock: the game lays a recipe out for a player only once they know it, and
+    a recipe learns itself when its ingredients are first held. Without this file that never
+    happens, and the recipe book shows the door and refuses to place it."""
+    recipe_path = "%s/recipe/%s.json" % (DATA, name)
+    if not os.path.exists(recipe_path):
+        return
+    with open(recipe_path) as f:
+        recipe = json.load(f)
+    recipe_id = "%s:%s" % (NS, name)
+    criteria = {"has_the_recipe": {"conditions": {"recipes": recipe_id},
+                                   "trigger": "minecraft:recipe_unlocked"}}
+    for item in sorted({v if isinstance(v, str) else v.get("item", "") for v in recipe.get("key", {}).values()}):
+        if not item:
+            continue
+        criteria["has_" + item.split(":")[-1]] = {"conditions": {"items": [{"items": item}]},
+                                                  "trigger": "minecraft:inventory_changed"}
+    write("%s/advancement/recipes/%s/%s.json" % (DATA, recipe.get("category", "misc"), name), {
+        "parent": "minecraft:recipes/root",
+        "criteria": criteria,
+        "requirements": [list(criteria.keys())],
+        "rewards": {"recipes": [recipe_id]},
+    })
+
+
 def build():
     made = 0
+    names = []
     for material in MATERIALS:
         for prefix in VARIANTS:
             door = "%s_%sdoor" % (material, prefix)
             trap = "%s_%strapdoor" % (material, prefix)
+            names += [door, trap]
 
             door_models(door)
             door_blockstate(door)
             item(door, {"parent": "minecraft:item/generated",
                         "textures": {"layer0": "%s:item/%s" % (NS, door)}})
             loot(door)
+            advancement(door)
 
             trapdoor_models(trap)
             trapdoor_blockstate(trap)
             item(trap, {"parent": "%s:block/%s_bottom" % (NS, trap)})
             loot(trap)
+            advancement(trap)
             made += 2
+    tags(names)
     print("generated assets for %d blocks across %d materials" % (made, len(MATERIALS)))
 
 
