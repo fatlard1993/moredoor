@@ -83,7 +83,9 @@ def joined(template, drop, is_open):
         side = "neg" if x0 == POST_NEG else "pos"
         if is_post and side in drop:
             continue
-        if not is_open:
+        if not is_open and not drop:
+            pass  # joined to nothing beside: vanilla's own latch and bars stay
+        elif not is_open:
             if 6 <= x0 < 10 and x1 - x0 == 2:
                 continue  # the latch pair
             if x1 - x0 == 4:
@@ -120,14 +122,59 @@ def joined(template, drop, is_open):
     return out
 
 
+# A gate's bars sit at 6 and 12 with the frame's foot at 5. Stacked, the upper gate keeps that
+# rhythm going: bars at 2 and 8 in its own block are 18 and 24 in the world, three clear
+# between every pair the whole way up. Left where they were, the two gates read as two
+# gates: a bar at 15 met a bar at 22 across a gap twice the others.
+STACK_SHIFT = 4
+
+
 def stacked(model):
-    """The model with its posts run down to the block's floor, to meet the gate below."""
+    """The model as the upper storey of a tall gate: posts run down to the floor to meet the
+    gate below, the bars and latch carried down to keep the gate's rhythm, and the latch run
+    a pixel past the floor so it meets the latch below without a seam."""
     out = json.loads(json.dumps(model))
     for e in out["elements"]:
         x0, x1 = e["from"][0], e["to"][0]
         if x1 - x0 == 2 and e["from"][1] == POST_FOOT and e["from"][2] == 7:
             e["from"][1] = 0
+            continue
+        e["from"][1] -= STACK_SHIFT
+        e["to"][1] -= STACK_SHIFT
+        if e["to"][1] - e["from"][1] == 9:  # a latch post, or the end post of a swung leaf
+            e["from"][1] = -1
     return out
+
+
+def single_leaf(template, hinge):
+    """The open template as one leaf hung from one post: both posts kept, the stub that
+    swung from the other post gone, and the kept one run the width of the gate."""
+    other = "pos" if hinge == "neg" else "neg"
+    kept = []
+    for element in template["elements"]:
+        x0, x1 = element["from"][0], element["to"][0]
+        is_post = x1 - x0 == 2 and (x0 == POST_NEG or x0 == POST_POS) and element["from"][2] == 7
+        if is_post:
+            kept.append(element)
+            continue
+        leaf_side = "neg" if x0 < 8 else "pos"
+        if leaf_side == other:
+            continue
+        e = json.loads(json.dumps(element))
+        if element["from"][2] == 13:
+            e["from"][2] = 9 + 14 - 2
+            e["to"][2] = 9 + 14
+        else:
+            e["to"][2] = 9 + 14
+        kept.append(e)
+    out = json.loads(json.dumps(template))
+    out["elements"] = kept
+    return out
+
+
+# The gate's own left is its counter-clockwise side looking the way it faces, which in the
+# template is the post at x=14; its right is the post at x=0.
+SWINGS = {"left": "pos", "right": "neg"}
 
 
 def rotate(model, quarter_turns):
@@ -167,6 +214,18 @@ def main():
                             model = rotate(built, turns)
                             model["textures"] = {"particle": texture, "texture": texture}
                             name = gate + state + "_join_" + join + ("_stacked" if on_another else "") + "_" + facing
+                            with open(os.path.join(OUT, name + ".json"), "w") as f:
+                                json.dump(model, f, separators=(",", ":"))
+                            count += 1
+            for state in ("_open", "_wall_open"):
+                for side, post in SWINGS.items():
+                    base = single_leaf(templates[state], post)
+                    for on_another in (False, True):
+                        built = stacked(base) if on_another else base
+                        for facing, turns in FACINGS.items():
+                            model = rotate(built, turns)
+                            model["textures"] = {"particle": texture, "texture": texture}
+                            name = gate + state + "_swing_" + side + ("_stacked" if on_another else "") + "_" + facing
                             with open(os.path.join(OUT, name + ".json"), "w") as f:
                                 json.dump(model, f, separators=(",", ":"))
                             count += 1

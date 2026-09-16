@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "more-doors-justfatlard:oak_full_glass_trapdoor",
+  "result": {
+    "id": "more-doors-justfatlard:oak_glass_trapdoor",
+    "count": 1
+  }
+}

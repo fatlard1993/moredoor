@@ -31,6 +31,12 @@ FRAME = 3.0
 # seam between the two halves.
 HANDLE_U = (11.0, 14.0)
 HANDLE_PROUD = 1.0
+# How much of the sheet's edge is frame. The thin faces - the door's edges, and the tops and
+# bottoms of its frame - read only this much of it. They used to read three columns, and on a
+# glass or barred sheet, whose frame is two, the third was window: a stripe of glass or bars up
+# every edge of the door. The tops of the stiles read a sixteen-pixel column squashed into a
+# three-pixel square. Frame all round is what a frame looks like from the side.
+EDGE = 2.0
 
 
 def face(texture, u1, v1, u2, v2, cull=None, rotation=None):
@@ -58,10 +64,8 @@ def box(texture, x1, x2, y1, y2, z1, z2, flip, edge_uv=None):
     # u at z1 and at z2.
     ua, ub = (16 - z1, 16 - z2) if flip else (z1, z2)
 
-    if edge_uv:
-        eu1, eu2 = edge_uv
-    else:
-        eu1, eu2 = x1, x2
+    eu1, eu2 = edge_uv if edge_uv else (0.0, EDGE)
+    lo, hi = min(ua, ub), max(ua, ub)
 
     return {
         "from": [x1, y1, z1],
@@ -71,8 +75,8 @@ def box(texture, x1, x2, y1, y2, z1, z2, flip, edge_uv=None):
             "east": face(texture, ub, v1, ua, v2, "east" if x2 == 16 else None),
             "north": face(texture, eu2, v1, eu1, v2, "north" if z1 == 0 else None),
             "south": face(texture, eu1, v1, eu2, v2, "south" if z2 == 16 else None),
-            "up": face(texture, ub, v1, ua, v2, "up" if y2 == 16 else None, 90),
-            "down": face(texture, ub, v1, ua, v2, "down" if y1 == 0 else None, 90),
+            "up": face(texture, eu1, lo, eu2, hi, "up" if y2 == 16 else None, 90),
+            "down": face(texture, eu1, lo, eu2, hi, "down" if y1 == 0 else None, 90),
         },
     }
 

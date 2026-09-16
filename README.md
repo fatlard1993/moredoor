@@ -1,7 +1,7 @@
-# More Doors
+# Moredoor
 
-Doors with depth, doors that lock, doors that swing together, and the same three variants for every
-material in the game.
+Doors with depth, doors that lock, doors that swing together, and the same six variants for every
+wood in the game.
 
 ## Doors Are Not Flat
 
@@ -10,7 +10,7 @@ shapes rebuilt: a frame standing proud of a recessed panel, and a handle that st
 to cast a shadow.
 
 **Every door in the game gets it**, not only this mod's. The eight shapes are vanilla's own, served
-above vanilla's copy, and every door - the twenty-two the game ships and the sixty-six here - is
+above vanilla's copy, and every door - the twenty-two the game ships and the seventy-eight here - is
 drawn from them. A resource pack that retextures doors still retextures all of them.
 
 ## Six Doors Per Wood, And Vanilla's Beside Them
@@ -28,8 +28,13 @@ So the shape and the wood are separated. Every wood offers:
 | **classic** | oak and iron's windowed shape | five planks, middle left out |
 | **glass** | one window, glazed | five planks and a glass pane in the gap |
 | **barred** | one window, barred | five planks and iron bars in the gap |
-| **full glass** | glazed the whole way down | three planks and three panes, side by side |
-| **full barred** | barred the whole way down | three planks and three iron bars, side by side |
+| **full glass** | glazed the whole way down (doors only) | three planks and three panes, side by side |
+| **full barred** | barred the whole way down (doors only) | three planks and three iron bars, side by side |
+
+Trapdoors come in the first four. A trapdoor is too short for a window to be anything but all of it,
+so a full-height one would only be the glass or barred trapdoor again. Full ones made before this
+still stand and still work; they are made no more, the stonecutter turns one into the glass or
+barred trapdoor it duplicated, and breaking one gives that trapdoor back.
 
 The shape of a door is decided by what you leave out of it. Six planks is a door with no opening;
 take one out of the middle and you get the opening; put glass or bars where you took it from and the
@@ -38,6 +43,11 @@ opening is filled. Put three down one side instead and it runs the height of the
 **Solid is the default**, and the plain six-plank recipe is written over vanilla's own to make it so.
 A door is a thing you cannot see through - that is most of the point of a door - so the shape that
 shuts properly is the one you get without asking for anything else.
+
+**A solid door keeps the light out.** A solid door or trapdoor stops light through the face it
+covers, the way a slab does through its half, so a shut one leaves the room behind it dark. Vanilla
+lets light through every door it has, iron included, and so does every variant here with an
+opening in it.
 
 **Where a wood already owns a shape, it keeps it exactly.** Dark oak's solid door and oak's classic
 door are pixel-for-pixel the vanilla blocks, not near-misses - which matters precisely because those
@@ -75,14 +85,15 @@ doors untouched.
 
 ## Locked Doors
 
-Any door plus an iron ingot gives a locked one: visually identical, and it opens for its owner and
-nobody else. The owner can let others in with `/doors allow <player>` while looking at it, take that
-back with `/doors deny`, and `/doors unlock` gives up the lock entirely. Operators are always let
-through.
+Right-click any door with an iron ingot and it is locked, the ingot spent: visually identical, and
+it opens for its owner and nobody else. The owner can let others in with `/doors allow <player>`
+while looking at it, take that back with `/doors deny <player>`, and `/doors unlock` gives up the
+lock entirely. Operators are always let through, and can use all three on anybody's door.
 
 **A bank locks as a whole**, because half a locked gate is a gate: the unlocked leaf beside the
-locked one is simply the way in. And a locked door cannot be broken by anyone but its owner - without
-that the lock is a suggestion, and anybody refused at the handle just takes it off its hinges.
+locked one is simply the way in. And a locked door cannot be broken by anyone it would not open
+for - without that the lock is a suggestion, and anybody refused at the handle just takes it off its
+hinges.
 
 ## A Door Is Made Of Squares
 
@@ -117,6 +128,10 @@ they make a rectangle.
 Doors hang from a side. Hanging from the top or the bottom is what a trapdoor is, and trapdoors
 stay trapdoors.
 
+Operators can also hang a door without the menu: `/doors hang <pos> <swing>`, the swing one of
+`left`, `right`, `slide_left`, `slide_right`, `slide_up` or `slide_down`, for the whole door at
+that position.
+
 **A sliding door goes along its own plane by its own size:** sideways like a barn door, up like a
 shutter, or down into the floor. It stays a door the whole way, so a slid door is drawn and walked
 through exactly as a closed one standing there. It needs the space it slides into to be clear: a
@@ -128,14 +143,18 @@ to go stays put and says so.
 wide door made of blocks never read as one. So a door wider than one leaf is moved when it swings:
 it hangs from its hinge column, and every other leaf goes to the block it really sweeps to, the same
 distance out from the hinge as it stood along the wall. Collision, light and the way through all
-agree with what is drawn. A door that swings into something goes as far as that and bounces back:
+agree with what is drawn. It goes a column at a time from the hinge, the outermost coming back
+first, and a sliding door travels a block at a time, so the bigger the door the longer it takes. A
+door that swings into something goes as far as that and bounces back:
 the leaves before the obstruction go out, the struck block sounds and sheds dust, and a moment later
 the door is closed again. A door one leaf wide swings in place, exactly as it always did, so a
 vanilla door is unchanged.
 
-**Doors side by side open together.** Touching, facing the same way and the same block: a double
-door is two doors everyone already treats as one, and a gatehouse can be a row of them. The leaf
-you click makes the sound; the rest come along quietly. A door beside an iron one is two doors that
+**Doors side by side open together.** Touching, standing in the same line and the same block: a
+double door is two doors everyone already treats as one, and a gatehouse can be a row of them. A
+pair built from opposite sides of the same doorway faces two ways and still opens as one, each leaf
+swinging its own way; a door in the wall at right angles is a door of its own. The leaf you click
+makes the sound; the rest come along quietly. A door beside an iron one is two doors that
 happen to be adjacent, and opening the iron one because somebody opened the oak one would be a way
 through a locked gate.
 
@@ -146,6 +165,14 @@ sneak and place one on the top of another and it takes.
 standing open against the same wall, and filling a rectangle, are drawn as one hatch or one
 shutter: the frame round the outside, the sheet's interior stretched across the inside. No new
 block and nothing to set up; lay them and they join.
+
+They open together too, floor hatches and wall shutters alike, with one sound between them:
+trapdoors of one kind, touching, at the same half of their blocks and hung across the same gap. A
+pair of cellar doors meeting in the middle faces two opposite ways and still opens as one hatch.
+Iron trapdoors are still opened by redstone, not by hand. **Sneak and right-click a trapdoor with
+an empty hand** to re-hang it: which edge it hinges from, named as you see it with the near edge at
+your feet, and whether it sits at the top or the bottom of its block. Vanilla fixes both at placing.
+The answer is for the whole hatch, closed, and reaches only the trapdoors hung the same way.
 
 **Drawn as one door.** The frame goes round the outside: stiles down the rectangle's edges, rails
 along its top and bottom, and one handle, at the swinging edge of the bottom row at the height a
@@ -163,7 +190,7 @@ stays put - the hinge column - or take the signal to where the door is when open
 ## Doors Connect To Fences
 
 A fence line running into a gate used to stop a block short, with a post standing on its own beside
-the doorway. Fences and walls now treat a door as something to connect to, so a fenced enclosure
+the doorway. Fences now treat a door as something to connect to, so a fenced enclosure
 with a gate in it reads as one continuous line.
 
 Where a fence meets a door, the door gets a jamb: a post at its edge where the fence arm
@@ -181,20 +208,28 @@ row is drawn as one wide gate, the shared posts gone and the bars running throug
 swinging from its own remaining post with a clear span between; a stack is drawn as one tall
 gate, the posts running the whole height rather than stopping at every storey.
 
+**Sneak and right-click a gate with an empty hand** for the same kind of menu a door has: one leaf
+from the left post, one from the right, or the two the game gives it, left and right as you see
+them. A tall gate is hung as one, every storey the same way. A gate with another beside it opens
+from the middle and says so. Pandorical clients draw the single leaf; vanilla clients see the gate
+the game draws.
+
 ## Turning A Door In Place
 
-Shift-right-click a door with an axe to cycle its facing without breaking it. Getting a door's
+Shift-right-click a door with an axe to cycle its hinge and facing without breaking it. Getting a door's
 orientation right otherwise means breaking it and replacing it until it lands the way you wanted,
 which for a locked door means losing the lock. Vanilla iron doors take a pickaxe instead, because
 that is what you would reach for.
 
 ## Pandorical
 
-More Doors registers its door blocks and the depth models through Pandorical's content sync.
+Moredoor registers its door blocks and the depth models through Pandorical's content sync, and
+requires Pandorical 1.3.9 or later on the server.
 
 **The Pandorical mod must be installed client-side** to see the depth, the locks' models, the
-joined gates and the jambs. Without it the doors still open, lock and open together, but a client
-sees them as flat vanilla doors.
+joined gates and the jambs, and to open the sneak right-click menus for doors, trapdoors and gates.
+Without it the doors still open, lock and open together, but a client sees them as flat vanilla
+doors.
 
 ## Development
 

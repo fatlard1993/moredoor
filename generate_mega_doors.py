@@ -28,7 +28,7 @@ import json
 import os
 import zipfile
 
-from generate_door_models import (FRAME, HANDLE_PROUD, HANDLE_U, PANEL_INSET, THICK, broad, face, seamless)
+from generate_door_models import (EDGE, FRAME, HANDLE_PROUD, HANDLE_U, PANEL_INSET, THICK, broad, face, seamless)
 from generate_door_jambs import find_jar
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -43,7 +43,8 @@ INNER = (FRAME, 16.0 - FRAME)
 def box(texture, x1, x2, y1, y2, z1, z2, u1, u2, v1, v2, flip, edge_uv=None):
     """A box whose wide faces read the sheet between u1..u2 across z1..z2 and v1..v2 down y."""
     ua, ub = (16 - u1, 16 - u2) if flip else (u1, u2)
-    eu1, eu2 = edge_uv if edge_uv else (x1, x2)
+    eu1, eu2 = edge_uv if edge_uv else (0.0, EDGE)
+    lo, hi = min(ua, ub), max(ua, ub)
     return {
         "from": [x1, y1, z1],
         "to": [x2, y2, z2],
@@ -52,8 +53,8 @@ def box(texture, x1, x2, y1, y2, z1, z2, u1, u2, v1, v2, flip, edge_uv=None):
             "east": face(texture, ub, v1, ua, v2, "east" if x2 == 16 else None),
             "north": face(texture, eu2, v1, eu1, v2, "north" if z1 == 0 else None),
             "south": face(texture, eu1, v1, eu2, v2, "south" if z2 == 16 else None),
-            "up": face(texture, ub, v1, ua, v2, "up" if y2 == 16 else None, 90),
-            "down": face(texture, ub, v1, ua, v2, "down" if y1 == 0 else None, 90),
+            "up": face(texture, eu1, lo, eu2, hi, "up" if y2 == 16 else None, 90),
+            "down": face(texture, eu1, lo, eu2, hi, "down" if y1 == 0 else None, 90),
         },
     }
 

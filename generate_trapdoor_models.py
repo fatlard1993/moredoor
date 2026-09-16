@@ -30,6 +30,8 @@ TEMPLATES = os.path.join(ASSETS, "minecraft/models/block")
 
 FRAME = 2.0
 THICK = 3.0
+# The edges read only the frame's rows of the sheet. They read three, and the frame is two, so
+# every trapdoor's edge carried a line of whatever was inside it - glass, bars, the panel's shade.
 
 
 def pieces(low, high):
@@ -68,13 +70,13 @@ def tile(state, l, r, t, b):
                 faces["north"] = face(u0, v1, u1, v0)
                 faces["south"] = face(u0, v1, u1, v0, "south")
                 if a0 == 0.0:
-                    faces["west"] = face(y0, 0.0, y1, THICK, "west", 90)
+                    faces["west"] = face(y0, 0.0, y1, FRAME, "west", 90)
                 if a1 == 16.0:
-                    faces["east"] = face(y0, THICK, y1, 0.0, "east", 90)
+                    faces["east"] = face(y0, FRAME, y1, 0.0, "east", 90)
                 if y0 == 0.0:
-                    faces["down"] = face(a0, 0.0, a1, THICK, "down")
+                    faces["down"] = face(a0, 0.0, a1, FRAME, "down")
                 if y1 == 16.0:
-                    faces["up"] = face(a0, THICK, a1, 0.0, "up")
+                    faces["up"] = face(a0, FRAME, a1, 0.0, "up")
             else:
                 # Lying flat at the bottom or top of the block: u along x, v along z.
                 y0, y1 = (0.0, THICK) if state == "bottom" else (16.0 - THICK, 16.0)
@@ -82,13 +84,13 @@ def tile(state, l, r, t, b):
                 faces["down"] = face(u0, v0, u1, v1, "down" if y0 == 0.0 else None)
                 faces["up"] = face(u0, 16.0 - v0, u1, 16.0 - v1, "up" if y1 == 16.0 else None)
                 if b0 == 0.0:
-                    faces["north"] = face(a0, 0.0, a1, THICK, "north")
+                    faces["north"] = face(a0, 0.0, a1, FRAME, "north")
                 if b1 == 16.0:
-                    faces["south"] = face(a0, 0.0, a1, THICK, "south")
+                    faces["south"] = face(a0, 0.0, a1, FRAME, "south")
                 if a0 == 0.0:
-                    faces["west"] = face(b0, 0.0, b1, THICK, "west")
+                    faces["west"] = face(b0, 0.0, b1, FRAME, "west")
                 if a1 == 16.0:
-                    faces["east"] = face(b0, 0.0, b1, THICK, "east")
+                    faces["east"] = face(b0, 0.0, b1, FRAME, "east")
             box["faces"] = faces
             elements.append(box)
     return elements

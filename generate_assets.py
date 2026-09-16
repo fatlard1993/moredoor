@@ -33,6 +33,12 @@ MATERIALS = WOODS
 VARIANTS = {"": True, "classic_": False, "glass_": False, "barred_": False,
             "full_glass_": False, "full_barred_": False}
 
+# A trapdoor is too short for a window to be anything but the whole of it, so the full-height
+# glass and bars were the same trapdoor twice. Retired: still registered, because some are
+# already built into the world and carried about, but made no more, and each drops the one it
+# duplicated when it is broken, so the world trades them in by itself.
+RETIRED_TRAPDOORS = {"full_glass_": "glass_", "full_barred_": "barred_"}
+
 DOOR_HALVES = ["bottom", "top"]
 DOOR_HINGES = ["left", "right"]
 DOOR_OPEN = ["", "_open"]
@@ -117,14 +123,14 @@ def item(name, model):
           {"model": {"type": "minecraft:model", "model": "%s:item/%s" % (NS, name)}})
 
 
-def loot(name):
+def loot(name, drops=None):
     """A block drops itself. A door is two blocks and one drop: only its lower half pays out.
 
     The shape is the game's own for its doors: one condition object per pool or entry, and the
     half read with match_block. A conditions list, the older shape, loads without complaint and
     without effect, and a door that way drops one per half.
     """
-    entry = {"type": "minecraft:item", "name": "%s:%s" % (NS, name)}
+    entry = {"type": "minecraft:item", "name": "%s:%s" % (NS, drops or name)}
     if name.endswith("_door"):
         entry = {"type": "minecraft:item",
                  "condition": {"type": "minecraft:match_block", "blocks": "%s:%s" % (NS, name),
@@ -200,8 +206,11 @@ def build():
             trapdoor_models(trap)
             trapdoor_blockstate(trap)
             item(trap, {"parent": "%s:block/%s_bottom" % (NS, trap)})
-            loot(trap)
-            advancement(trap)
+            if prefix in RETIRED_TRAPDOORS:
+                loot(trap, "%s_%strapdoor" % (material, RETIRED_TRAPDOORS[prefix]))
+            else:
+                loot(trap)
+                advancement(trap)
             made += 2
     tags(names)
     print("generated assets for %d blocks across %d materials" % (made, len(MATERIALS)))

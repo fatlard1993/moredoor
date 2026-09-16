@@ -73,6 +73,63 @@ def slide(draw, colour, direction):
                 draw.point((x, tip + step * i), colour)
 
 
+def gate(draw, colour, hinge):
+    """A gate from above, the player at the bottom: the shut gate across the middle, and its
+    leaves where they stand open, dashed. One leaf from the left post, one from the right, or
+    a leaf from each post meeting in the middle, which is the gate the game gives you."""
+    block(draw, colour)
+    for x in range(2, 20):                 # shut, across the middle
+        draw.point((x, 10), colour); draw.point((x, 11), colour)
+    for x in (1, 2, 19, 20):               # the posts
+        for y in range(9, 13):
+            draw.point((x, y), colour)
+    def leaf(x, length):
+        for y in range(2, 2 + length):     # open, dashed away from the player
+            if (y // 2) % 2 == 0:
+                draw.point((x, y), colour); draw.point((x + 1, y), colour)
+    if hinge == "left":
+        leaf(3, 8)
+    elif hinge == "right":
+        leaf(17, 8)
+    else:
+        leaf(3, 5); leaf(17, 5)
+
+
+def hatch_edge(draw, colour, edge):
+    """The block from above, the player at the bottom: the hatch shut across it, the edge it
+    hangs from drawn solid, and where it falls to dashed away from that edge."""
+    block(draw, colour)
+    for x in range(3, 19):                 # the hatch lying shut
+        for y in range(3, 19):
+            if (x + y) % 3 == 0:
+                draw.point((x, y), colour[:3] + (120,))
+    # The hinged edge, solid, on whichever side this is.
+    for i in range(2, 20):
+        for t in range(2):
+            if edge == "near":   draw.point((i, 19 - t), colour)
+            elif edge == "far":  draw.point((i, 2 + t), colour)
+            elif edge == "left": draw.point((2 + t, i), colour)
+            else:                draw.point((19 - t, i), colour)
+    # Dashed, away from it: where the hatch swings down to.
+    for i in range(4, 18):
+        if (i // 2) % 2: continue
+        if edge == "near":   draw.point((i, 4), colour)
+        elif edge == "far":  draw.point((i, 17), colour)
+        elif edge == "left": draw.point((17, i), colour)
+        else:                draw.point((4, i), colour)
+
+
+def hatch_half(draw, colour, top):
+    """The block from the side: the hatch lying at the top of it or at the bottom."""
+    for i in range(1, 21):                 # the block's outline, faintly
+        for x, y in ((i, 1), (i, 20), (1, i), (20, i)):
+            draw.point((x, y), colour[:3] + (90,))
+    y = 3 if top else 17
+    for x in range(3, 19):
+        for t in range(3):
+            draw.point((x, y + t), colour)
+
+
 def icon(name, paint):
     for suffix, colour in (("", WHITE), ("_lit", LIT)):
         image = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
@@ -90,4 +147,10 @@ for far in (False, True):
              lambda d, c, far=far, right=right: corner(d, c, far, right))
 for i, name in enumerate(("slide_left", "slide_right", "slide_up", "slide_down")):
     icon(name, lambda d, c, i=i: slide(d, c, i))
-print("wrote 18 menu icons")
+for hinge in ("left", "double", "right"):
+    icon("gate_" + hinge, lambda d, c, hinge=hinge: gate(d, c, hinge))
+for edge in ("near", "far", "left", "right"):
+    icon("hatch_" + edge, lambda d, c, edge=edge: hatch_edge(d, c, edge))
+for top in (True, False):
+    icon("hatch_" + ("top" if top else "bottom"), lambda d, c, top=top: hatch_half(d, c, top))
+print("wrote 36 menu icons")

@@ -98,9 +98,11 @@ def build():
             write(NS, "recipe", "%s_%sdoor" % (wood, prefix),
                   shaped(["#o", "#o", "#o"], keys, "%s:%s_%sdoor" % (NS, wood, prefix),
                          count=3, category="redstone"))
-            write(NS, "recipe", "%s_%strapdoor" % (wood, prefix),
-                  shaped(["###", "ooo"], keys, "%s:%s_%strapdoor" % (NS, wood, prefix),
-                         count=2, category="redstone"))
+            # No full-height trapdoor any more: a trapdoor is all window already. The stonecutter
+            # turns the ones already made into the trapdoor they duplicated.
+            simple = prefix.replace("full_", "")
+            write(NS, "recipe", "cut_%s_%strapdoor_to_%s_%strapdoor" % (wood, prefix, wood, simple),
+                  cut("%s:%s_%strapdoor" % (NS, wood, prefix), "%s:%s_%strapdoor" % (NS, wood, simple)))
             made += 2
 
         # The stonecutter carries a wood between the faces that cost no extra material,
