@@ -3,6 +3,11 @@
 Doors with depth, doors that lock, doors that swing together, and the same six variants for every
 wood in the game.
 
+## Screenshots
+
+![Oak's six doors side by side in one wall: solid, classic, glass, barred, full glass, full barred](doors.png)
+![A barred door up close: the frame standing proud of the recessed panels, the handle casting its own shadow](door-depth.png)
+
 ## Doors Are Not Flat
 
 Vanilla's door is one slab three pixels thick with a picture painted on it. These are the same eight

@@ -1,0 +1,18 @@
+{
+	"schemaVersion": 1,
+	"id": "moredoor-gametest",
+	"version": "1.0.0",
+	"name": "Moredoor game tests",
+	"description": "The pictures for the readme and the mod page.",
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"justfatlard.moredoor.gametest.Showcase"
+		]
+	},
+	"depends": {
+		"more-doors-justfatlard": "*",
+		"fabric-client-gametest-api-v1": "*"
+	}
+}
