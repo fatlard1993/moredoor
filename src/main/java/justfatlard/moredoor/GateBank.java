@@ -70,6 +70,43 @@ public final class GateBank {
 		return InteractionResult.SUCCESS;
 	}
 
+	/**
+	 * A signal reaches every gate a click would.
+	 *
+	 * <p>Vanilla powers a block, and a double gate is two blocks: a lever beside one leaf opened
+	 * that leaf and left the other shut, which is the one thing nobody building a gate across a
+	 * cart track wants. The bank answers together instead - powered when anything touching any of
+	 * it is powered, so a signal at either end works, and closed again when the last of it goes
+	 * quiet.
+	 *
+	 * <p>Facing is left alone. A click turns a gate away from whoever opened it; a lever is not
+	 * standing anywhere, so the gate swings the way it already hangs.
+	 *
+	 * @return true when the bank has been dealt with and vanilla should not also act
+	 */
+	public static boolean powerChanged(ServerLevel level, BlockPos pos, BlockState state) {
+		Set<BlockPos> bank = gatesOf(level, pos, state);
+		if (bank.size() < 2) return false;
+
+		boolean powered = false;
+		for (BlockPos gate : bank) powered |= level.hasNeighborSignal(gate);
+		if (powered == state.getValue(FenceGateBlock.POWERED)) return true;
+
+		boolean opening = powered != state.getValue(FenceGateBlock.OPEN);
+		for (BlockPos gate : bank) {
+			BlockState each = level.getBlockState(gate);
+			if (!joins(each, state)) continue;
+			level.setBlock(gate, each.setValue(FenceGateBlock.POWERED, powered)
+				.setValue(FenceGateBlock.OPEN, powered), Block.UPDATE_ALL);
+		}
+		if (opening) {
+			level.playSound(null, pos, powered ? SoundEvents.FENCE_GATE_OPEN : SoundEvents.FENCE_GATE_CLOSE,
+				SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
+			level.gameEvent(null, powered ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, pos);
+		}
+		return true;
+	}
+
 	/** Every gate joined to this one along its line, including it. */
 	public static Set<BlockPos> gatesOf(Level level, BlockPos pos, BlockState state) {
 		Set<BlockPos> found = new LinkedHashSet<>();
