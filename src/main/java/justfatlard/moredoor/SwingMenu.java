@@ -329,20 +329,32 @@ public final class SwingMenu {
 		if (locks.refuses(player, level, foot, state)) return;
 		DoorSwings swings = DoorSwings.get(level);
 
-		// Hung the way the biggest door among them hangs, which is the one worth joining; the
-		// clicked leaf's own way if there is no bigger. Everything touching is looked at to find
-		// that door, whichever way any of it faces; then the row is read along its line.
+		// Hung the way the biggest door among them hangs, which is the one worth joining.
+		// Everything touching is looked at to find that door, whichever way any of it faces; then
+		// the row is read along its line.
 		Swing like = swings.settingOf(foot, state);
 		Direction facing = state.getValue(DoorBlock.FACING);
+		DoorHingeSide hinge = state.getValue(DoorBlock.HINGE);
+		Set<BlockPos> touching = contiguous(level, foot, null);
 		int biggest = 1;
-		for (BlockPos leaf : contiguous(level, foot, null)) {
+		for (BlockPos leaf : touching) {
 			DoorGroup group = DoorGroup.at(level, leaf);
 			int size = group != null ? group.width * group.height : 1;
 			if (size > biggest) {
 				biggest = size;
 				like = group.swing;
 				facing = group.facing;
+				hinge = group.hinge;
 			}
+		}
+		// Nothing standing here is a door yet, which is what one leaf hung the wrong way does to a
+		// whole wall of them: they fill a rectangle, so every one of them is in the group, and one
+		// odd hinge means the rectangle never closes. There is no bigger door to copy then, so they
+		// follow the way most of them already hang rather than the one that happened to be clicked
+		// - which would otherwise let a click on the odd leaf turn the whole wall around.
+		if (biggest == 1) {
+			hinge = commonHinge(level, touching, hinge);
+			if (like.isSideHinge()) like = Swing.of(hinge);
 		}
 		Set<BlockPos> leaves = contiguous(level, foot, facing);
 		for (BlockPos leaf : leaves) {
@@ -356,7 +368,7 @@ public final class SwingMenu {
 		}
 		for (BlockPos leaf : leaves) {
 			swings.setDetached(level, leaf, false);
-			hang(level, leaf, like, facing);
+			hang(level, leaf, like, facing, hinge);
 		}
 		level.playSound(null, foot, SoundEvents.ITEM_FRAME_ROTATE_ITEM, SoundSource.BLOCKS, 0.8F, 1.2F);
 		DoorGroup made = DoorGroup.at(level, foot);
@@ -396,11 +408,23 @@ public final class SwingMenu {
 		return true;
 	}
 
+	/** Hang one leaf this way, leaving the side it hangs from alone. */
+	public static void hang(ServerLevel level, BlockPos leaf, Swing swing, Direction facing) {
+		hang(level, leaf, swing, facing, null);
+	}
+
 	/**
 	 * Hang one leaf this way: the slide remembered, the side hinge written into its blocks, and
 	 * the leaf turned to face the given way if one is given.
+	 *
+	 * <p>A side hinge is the swing, so it writes itself. A slide is not, and its leaves still carry
+	 * a hinge: it decides nothing about how the door moves, but {@link DoorGroup#joins} reads it,
+	 * because two leaves hung on opposite sides are mirrored and do not make one door. So a slide
+	 * is given the hinge to settle on, and one odd leaf in a slid wall becomes something the
+	 * autoconnect button can put right. Null leaves it as it stands, for a caller with no opinion.
 	 */
-	public static void hang(ServerLevel level, BlockPos leaf, Swing swing, Direction facing) {
+	public static void hang(ServerLevel level, BlockPos leaf, Swing swing, Direction facing,
+			DoorHingeSide hinge) {
 		DoorSwings.get(level).setSetting(level, leaf, swing);
 		for (BlockPos half : new BlockPos[] {leaf, leaf.above()}) {
 			BlockState there = level.getBlockState(half);
@@ -408,9 +432,24 @@ public final class SwingMenu {
 			if (facing != null) there = there.setValue(DoorBlock.FACING, facing);
 			if (swing.isSideHinge()) {
 				there = there.setValue(DoorBlock.HINGE, swing == Swing.RIGHT ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT);
+			} else if (hinge != null) {
+				there = there.setValue(DoorBlock.HINGE, hinge);
 			}
 			level.setBlock(half, there, Block.UPDATE_ALL);
 		}
+	}
+
+	/** The side most of these leaves hang from, or the given fallback where they are evenly split. */
+	private static DoorHingeSide commonHinge(ServerLevel level, Set<BlockPos> leaves, DoorHingeSide fallback) {
+		int right = 0;
+		int left = 0;
+		for (BlockPos leaf : leaves) {
+			BlockState there = level.getBlockState(leaf);
+			if (!there.hasProperty(DoorBlock.HINGE)) continue;
+			if (there.getValue(DoorBlock.HINGE) == DoorHingeSide.RIGHT) right++;
+			else left++;
+		}
+		return right == left ? fallback : right > left ? DoorHingeSide.RIGHT : DoorHingeSide.LEFT;
 	}
 
 	private static void apply(ServerPlayer player, Swing swing, Direction facing) {
@@ -426,7 +465,8 @@ public final class SwingMenu {
 		// The whole door, always: a leaf that should not follow is cut loose first.
 		DoorGroup group = DoorGroup.at(level, foot);
 		Iterable<BlockPos> feet = group != null ? group.feet() : List.of(foot);
-		for (BlockPos leaf : feet) hang(level, leaf, swing, facing);
+		DoorHingeSide hinge = group != null ? group.hinge : state.getValue(DoorBlock.HINGE);
+		for (BlockPos leaf : feet) hang(level, leaf, swing, facing, hinge);
 		level.playSound(null, foot, SoundEvents.ITEM_FRAME_ROTATE_ITEM, SoundSource.BLOCKS, 0.8F, 1.0F);
 		String said = swing.isSideHinge()
 			? Corner.of(level.getBlockState(foot), chosen.toward()).id() : swing.name().toLowerCase();
