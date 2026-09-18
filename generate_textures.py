@@ -221,7 +221,12 @@ VARIANTS = ("", "classic_", "glass_", "barred_", "full_glass_", "full_barred_")
 # door with holes in it and wrong for a glazed one: nobody puts four postage stamps of glass in a
 # door and leaves the timber standing between them. So the cross comes out and the four become one.
 WINDOW = ((2, 12, 2, 11), None)
-FULL = ((2, 12, 2, 15), (2, 12, 0, 12))
+
+# The full variants run the whole height, rails and all. A rail at the top of one leaf and another
+# at the bottom of the next put a five pixel band of timber across the middle of any door built
+# from more than one square - which is most of what these two get used for, and the opposite of
+# what "barred the whole way down" promises. The stiles either side still frame it.
+FULL = ((2, 12, 0, 15), (2, 12, 0, 15))
 
 # Clear air between the top of an opening and the first cross-brace in it.
 BRACE_GAP = 2
