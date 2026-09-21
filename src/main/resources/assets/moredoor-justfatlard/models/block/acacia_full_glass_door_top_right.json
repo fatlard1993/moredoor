@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_top_right",
+  "textures": {
+    "bottom": "moredoor-justfatlard:block/acacia_full_glass_door_bottom",
+    "top": "moredoor-justfatlard:block/acacia_full_glass_door_top"
+  }
+}

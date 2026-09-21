@@ -98,9 +98,9 @@ public final class TrapMenu {
 
 	private static Map<String, String> props(String id, boolean lit) {
 		return Map.of(
-			ComponentType.PROP_ICON, "more-doors-justfatlard:swing/" + id + (lit ? "_lit" : ""),
+			ComponentType.PROP_ICON, "moredoor-justfatlard:swing/" + id + (lit ? "_lit" : ""),
 			ComponentType.PROP_STYLE, lit ? "pressed" : "default",
-			ComponentType.PROP_TOOLTIP_KEY, "more-doors-justfatlard.trapdoor.set." + id);
+			ComponentType.PROP_TOOLTIP_KEY, "moredoor-justfatlard.trapdoor.set." + id);
 	}
 
 	/**
@@ -165,7 +165,7 @@ public final class TrapMenu {
 		String litEdge = edgeIdOf(after.getValue(TrapDoorBlock.FACING), now.toward());
 		String litHalf = after.getValue(TrapDoorBlock.HALF) == Half.TOP ? TOP : BOTTOM;
 		player.sendOverlayMessage(Component.translatable(
-			"more-doors-justfatlard.trapdoor.set." + (facing != null ? litEdge : litHalf)));
+			"moredoor-justfatlard.trapdoor.set." + (facing != null ? litEdge : litHalf)));
 
 		List<ComponentUpdate> updates = new ArrayList<>();
 		for (String edge : EDGES) updates.add(new ComponentUpdate(edge, props(edge, edge.equals(litEdge))));

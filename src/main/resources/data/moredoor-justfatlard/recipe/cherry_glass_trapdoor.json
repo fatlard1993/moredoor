@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "###",
+    "#o#"
+  ],
+  "key": {
+    "#": "minecraft:cherry_planks",
+    "o": "minecraft:glass_pane"
+  },
+  "result": {
+    "id": "moredoor-justfatlard:cherry_glass_trapdoor",
+    "count": 2
+  }
+}

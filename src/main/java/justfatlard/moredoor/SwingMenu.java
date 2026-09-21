@@ -48,10 +48,11 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 public final class SwingMenu {
 	private SwingMenu() {}
 
-	public static final String TYPE = "more-doors:swing";
+	public static final String TYPE = "moredoor:swing";
 	private static final String DISCONNECT = "disconnect";
 	private static final String AUTOCONNECT = "autoconnect";
 	private static final String FLIP = "face_flip";
+	private static final String LOCK = "lock";
 
 	private static final int BUTTON = 24;
 	private static final int GAP = 4;
@@ -61,6 +62,7 @@ public final class SwingMenu {
 	private static final int LINK_Y = SLIDE_Y + BUTTON + 8;
 	private static final int HEIGHT_ALONE = SLIDE_Y + BUTTON + 8;
 	private static final int HEIGHT_LINKED = LINK_Y + 20 + 8;
+	private static final int ROW = 20;
 	private static final int MAX_LEAVES = 64;
 
 	/** One of the four corners a hinged leaf can hang from, as the player sees the block. */
@@ -116,6 +118,7 @@ public final class SwingMenu {
 		PandoricalApi.screens().onAction(TYPE, FLIP, (player, data) -> flipFace(player));
 		PandoricalApi.screens().onAction(TYPE, DISCONNECT, (player, data) -> disconnect(player));
 		PandoricalApi.screens().onAction(TYPE, AUTOCONNECT, (player, data) -> autoconnect(player));
+		PandoricalApi.screens().onAction(TYPE, LOCK, (player, data) -> cycleLock(player));
 		PandoricalApi.screens().onClose(TYPE, player -> target.remove(player.getUUID()));
 	}
 
@@ -128,6 +131,12 @@ public final class SwingMenu {
 		int height = linked ? HEIGHT_LINKED : HEIGHT_ALONE;
 		boolean joined = joined(level, foot);
 		boolean loose = looseNeighbours(level, foot);
+
+		// Always there, whatever the door is: a menu that only grows a lock once the door is
+		// already locked is a menu with no way to lock a door.
+		DoorLocks.Lock lock = DoorLocks.get(level).lockAt(foot);
+		int lockY = linked ? LINK_Y + ROW + GAP : LINK_Y;
+		height = lockY + ROW + 8;
 
 		ScreenBuilder screen = new ScreenBuilder(TYPE).size(WIDTH, height).title("Door");
 		screen.panel("frame", 0, 0, WIDTH, height, Map.of());
@@ -152,9 +161,11 @@ public final class SwingMenu {
 		// on its own, side by side when both apply.
 		if (linked) {
 			int half = (WIDTH - 16 - GAP) / 2;
-			screen.button(DISCONNECT, 8, LINK_Y, half, 20, linkProps("more-doors-justfatlard.swing.disconnect", joined));
-			screen.button(AUTOCONNECT, 8 + half + GAP, LINK_Y, half, 20, linkProps("more-doors-justfatlard.swing.autoconnect", loose));
+			screen.button(DISCONNECT, 8, LINK_Y, half, 20, linkProps("moredoor-justfatlard.swing.disconnect", joined));
+			screen.button(AUTOCONNECT, 8 + half + GAP, LINK_Y, half, 20, linkProps("moredoor-justfatlard.swing.autoconnect", loose));
 		}
+
+		screen.button(LOCK, 8, lockY, WIDTH - 16, ROW, lockProps(lock));
 
 		target.put(player.getUUID(), new Target(foot, toward, screen.screenId()));
 		PandoricalApi.screens().open(player, screen.build());
@@ -183,9 +194,63 @@ public final class SwingMenu {
 	/** The picture, lit when it is the answer, with the words for it under the pointer. */
 	private static Map<String, String> buttonProps(String id, boolean lit) {
 		return Map.of(
-			ComponentType.PROP_ICON, "more-doors-justfatlard:swing/" + id + (lit ? "_lit" : ""),
+			ComponentType.PROP_ICON, "moredoor-justfatlard:swing/" + id + (lit ? "_lit" : ""),
 			ComponentType.PROP_STYLE, lit ? "pressed" : "default",
-			ComponentType.PROP_TOOLTIP_KEY, "more-doors-justfatlard.swing.set." + id);
+			ComponentType.PROP_TOOLTIP_KEY, "moredoor-justfatlard.swing.set." + id);
+	}
+
+	/** The lock, reading as what the door is now; the tooltip says what pressing it does next. */
+	private static Map<String, String> lockProps(DoorLocks.Lock lock) {
+		String state = lock == null ? "off" : lock.isPublic() ? "anyone" : "on";
+		return Map.of(
+			ComponentType.PROP_LABEL_KEY, "moredoor-justfatlard.swing.lock_" + state,
+			ComponentType.PROP_STYLE, lock == null ? "default" : "pressed",
+			ComponentType.PROP_TOOLTIP_KEY, "moredoor-justfatlard.swing.lock_" + state + "_tip");
+	}
+
+	/**
+	 * Round the three things a door's lock can be: nobody's, yours, or yours and open to all.
+	 *
+	 * <p>One button through all three, which is what chest-utils does with a chest, deliberately:
+	 * the two locks are the same idea and a player who has met one should not have to learn the
+	 * other. A door left open is still yours - anybody walks through it, nobody else breaks it,
+	 * re-hangs it or takes the lock off.
+	 */
+	private static void cycleLock(ServerPlayer player) {
+		Target now = target.get(player.getUUID());
+		if (now == null) return;
+		ServerLevel level = player.level();
+		BlockPos foot = now.foot();
+		BlockState state = level.getBlockState(foot);
+		if (!(state.getBlock() instanceof DoorBlock)) return;
+
+		DoorLocks locks = DoorLocks.get(level);
+		// Asked fresh rather than trusted from when the menu opened: somebody else may have locked
+		// it since, and an open door's menu opens for anybody.
+		if (locks.refuses(player, level, foot, state, DoorLocks.Use.LOCK)) {
+			player.sendOverlayMessage(Component.translatable("moredoor-justfatlard.locked.by",
+				locks.lockedBy(level, foot, state)));
+			return;
+		}
+
+		DoorLocks.Lock was = locks.lockAt(foot);
+		String said;
+		if (was == null) {
+			locks.lock(player, level, foot, state);
+			said = "moredoor-justfatlard.swing.lock_on_said";
+		} else if (!was.isPublic()) {
+			locks.publish(level, foot, state, true);
+			said = "moredoor-justfatlard.swing.lock_anyone_said";
+		} else {
+			locks.unlock(level, foot, state);
+			said = "moredoor-justfatlard.swing.lock_off_said";
+		}
+
+		level.playSound(null, foot, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.6F,
+			locks.lockAt(foot) == null ? 0.8F : 1.4F);
+		player.sendOverlayMessage(Component.translatable(said));
+		PandoricalApi.screens().update(player, now.screenId(),
+			List.of(new ComponentUpdate(LOCK, lockProps(locks.lockAt(foot)))));
 	}
 
 	private static Map<String, String> linkProps(String labelKey, boolean shown) {
@@ -289,8 +354,8 @@ public final class SwingMenu {
 			updates.add(new ComponentUpdate(slide.name().toLowerCase(), buttonProps(slide.name().toLowerCase(), slide == swing)));
 		}
 		if (touching(level, now.foot(), level.getBlockState(now.foot()))) {
-			updates.add(new ComponentUpdate(DISCONNECT, linkProps("more-doors-justfatlard.swing.disconnect", joined(level, now.foot()))));
-			updates.add(new ComponentUpdate(AUTOCONNECT, linkProps("more-doors-justfatlard.swing.autoconnect", looseNeighbours(level, now.foot()))));
+			updates.add(new ComponentUpdate(DISCONNECT, linkProps("moredoor-justfatlard.swing.disconnect", joined(level, now.foot()))));
+			updates.add(new ComponentUpdate(AUTOCONNECT, linkProps("moredoor-justfatlard.swing.autoconnect", looseNeighbours(level, now.foot()))));
 		}
 		PandoricalApi.screens().update(player, now.screenId(), updates);
 	}
@@ -303,14 +368,14 @@ public final class SwingMenu {
 		BlockPos foot = now.foot();
 		BlockState state = level.getBlockState(foot);
 		if (!(state.getBlock() instanceof DoorBlock)) return;
-		if (DoorLocks.get(level).refuses(player, level, foot, state)) return;
+		if (DoorLocks.get(level).refuses(player, level, foot, state, DoorLocks.Use.ALTER)) return;
 		if (!joined(level, foot)) return;
 
 		// Not while open: a slid door would never find its way back.
 		if (!settle(player, foot)) return;
 		DoorSwings.get(level).setDetached(level, foot, true);
 		level.playSound(null, foot, SoundEvents.ITEM_FRAME_ROTATE_ITEM, SoundSource.BLOCKS, 0.8F, 0.8F);
-		player.sendOverlayMessage(Component.translatable("more-doors-justfatlard.swing.disconnected"));
+		player.sendOverlayMessage(Component.translatable("moredoor-justfatlard.swing.disconnected"));
 		refresh(player);
 	}
 
@@ -326,7 +391,7 @@ public final class SwingMenu {
 		BlockState state = level.getBlockState(foot);
 		if (!(state.getBlock() instanceof DoorBlock)) return;
 		DoorLocks locks = DoorLocks.get(level);
-		if (locks.refuses(player, level, foot, state)) return;
+		if (locks.refuses(player, level, foot, state, DoorLocks.Use.ALTER)) return;
 		DoorSwings swings = DoorSwings.get(level);
 
 		// Hung the way the biggest door among them hangs, which is the one worth joining.
@@ -358,8 +423,8 @@ public final class SwingMenu {
 		}
 		Set<BlockPos> leaves = contiguous(level, foot, facing);
 		for (BlockPos leaf : leaves) {
-			if (locks.refuses(player, level, leaf, level.getBlockState(leaf))) {
-				player.sendOverlayMessage(Component.translatable("more-doors-justfatlard.swing.autoconnect_locked"));
+			if (locks.refuses(player, level, leaf, level.getBlockState(leaf), DoorLocks.Use.ALTER)) {
+				player.sendOverlayMessage(Component.translatable("moredoor-justfatlard.swing.autoconnect_locked"));
 				return;
 			}
 		}
@@ -374,7 +439,7 @@ public final class SwingMenu {
 		DoorGroup made = DoorGroup.at(level, foot);
 		boolean whole = made != null && made.width * made.height == leaves.size();
 		player.sendOverlayMessage(Component.translatable(whole
-			? "more-doors-justfatlard.swing.autoconnected" : "more-doors-justfatlard.swing.autoconnect_apart"));
+			? "moredoor-justfatlard.swing.autoconnected" : "moredoor-justfatlard.swing.autoconnect_apart"));
 		refresh(player);
 	}
 
@@ -392,7 +457,7 @@ public final class SwingMenu {
 		DoorGroup standing = DoorGroup.at(level, foot);
 		if (standing != null && standing.open) {
 			if (!DoorSwing.set(level, player, standing, false, true)) {
-				player.sendOverlayMessage(Component.translatable("more-doors-justfatlard.swing.blocked"));
+				player.sendOverlayMessage(Component.translatable("moredoor-justfatlard.swing.blocked"));
 				refresh(player);
 				return false;
 			}
@@ -459,7 +524,7 @@ public final class SwingMenu {
 		BlockPos foot = chosen.foot();
 		BlockState state = level.getBlockState(foot);
 		if (!(state.getBlock() instanceof DoorBlock)) return;
-		if (DoorLocks.get(level).refuses(player, level, foot, state)) return;
+		if (DoorLocks.get(level).refuses(player, level, foot, state, DoorLocks.Use.ALTER)) return;
 		if (!settle(player, foot)) return;
 
 		// The whole door, always: a leaf that should not follow is cut loose first.
@@ -470,7 +535,7 @@ public final class SwingMenu {
 		level.playSound(null, foot, SoundEvents.ITEM_FRAME_ROTATE_ITEM, SoundSource.BLOCKS, 0.8F, 1.0F);
 		String said = swing.isSideHinge()
 			? Corner.of(level.getBlockState(foot), chosen.toward()).id() : swing.name().toLowerCase();
-		player.sendOverlayMessage(Component.translatable("more-doors-justfatlard.swing.set." + said));
+		player.sendOverlayMessage(Component.translatable("moredoor-justfatlard.swing.set." + said));
 		refresh(player);
 	}
 }

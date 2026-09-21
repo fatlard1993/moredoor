@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "moredoor-justfatlard:cherry_full_barred_trapdoor",
+  "result": {
+    "id": "moredoor-justfatlard:cherry_barred_trapdoor",
+    "count": 1
+  }
+}

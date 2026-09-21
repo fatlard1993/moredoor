@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "moredoor-justfatlard:mangrove_classic_door",
+  "result": {
+    "id": "moredoor-justfatlard:mangrove_door",
+    "count": 1
+  }
+}

@@ -56,7 +56,7 @@ public final class DoorCommands {
 		ServerLevel level = source.getLevel();
 		BlockState state = level.getBlockState(pos);
 		if (!(state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock)) {
-			source.sendFailure(Component.translatable("more-doors-justfatlard.command.no_door"));
+			source.sendFailure(Component.translatable("moredoor-justfatlard.command.no_door"));
 			return 0;
 		}
 		// Looked up here rather than through Swing.parse, which settles anything unknown on LEFT
@@ -87,7 +87,7 @@ public final class DoorCommands {
 
 		BlockPos door = lookingAt(player, level);
 		if (door == null) {
-			source.sendFailure(Component.translatable("more-doors-justfatlard.command.no_door"));
+			source.sendFailure(Component.translatable("moredoor-justfatlard.command.no_door"));
 			return 0;
 		}
 
@@ -96,12 +96,12 @@ public final class DoorCommands {
 		DoorLocks.Lock lock = locks.lockAt(DoorBank.footOf(door, state));
 
 		if (lock == null) {
-			source.sendFailure(Component.translatable("more-doors-justfatlard.command.not_locked"));
+			source.sendFailure(Component.translatable("moredoor-justfatlard.command.not_locked"));
 			return 0;
 		}
 		// The owner's list is the owner's to change, and an op's is anybody's.
 		if (!lock.owner().equals(player.getUUID()) && !source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
-			source.sendFailure(Component.translatable("more-doors-justfatlard.command.not_yours",
+			source.sendFailure(Component.translatable("moredoor-justfatlard.command.not_yours",
 				lock.ownerName()));
 			return 0;
 		}
@@ -112,8 +112,8 @@ public final class DoorCommands {
 		}
 
 		source.sendSuccess(() -> Component.translatable(allow
-			? "more-doors-justfatlard.command.allowed"
-			: "more-doors-justfatlard.command.denied", guests.size()), false);
+			? "moredoor-justfatlard.command.allowed"
+			: "moredoor-justfatlard.command.denied", guests.size()), false);
 		return changed;
 	}
 
@@ -124,7 +124,7 @@ public final class DoorCommands {
 
 		BlockPos door = lookingAt(player, level);
 		if (door == null) {
-			source.sendFailure(Component.translatable("more-doors-justfatlard.command.no_door"));
+			source.sendFailure(Component.translatable("moredoor-justfatlard.command.no_door"));
 			return 0;
 		}
 
@@ -133,17 +133,17 @@ public final class DoorCommands {
 		DoorLocks.Lock lock = locks.lockAt(DoorBank.footOf(door, state));
 
 		if (lock == null) {
-			source.sendFailure(Component.translatable("more-doors-justfatlard.command.not_locked"));
+			source.sendFailure(Component.translatable("moredoor-justfatlard.command.not_locked"));
 			return 0;
 		}
 		if (!lock.owner().equals(player.getUUID()) && !source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
-			source.sendFailure(Component.translatable("more-doors-justfatlard.command.not_yours",
+			source.sendFailure(Component.translatable("moredoor-justfatlard.command.not_yours",
 				lock.ownerName()));
 			return 0;
 		}
 
 		locks.unlock(level, door, state);
-		source.sendSuccess(() -> Component.translatable("more-doors-justfatlard.command.unlocked"), false);
+		source.sendSuccess(() -> Component.translatable("moredoor-justfatlard.command.unlocked"), false);
 		return 1;
 	}
 

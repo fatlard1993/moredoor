@@ -1,8 +1,0 @@
-{
-  "type": "minecraft:stonecutting",
-  "ingredient": "more-doors-justfatlard:warped_classic_door",
-  "result": {
-    "id": "more-doors-justfatlard:warped_door",
-    "count": 1
-  }
-}

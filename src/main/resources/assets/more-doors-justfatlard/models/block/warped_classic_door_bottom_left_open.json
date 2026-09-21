@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/door_bottom_left_open",
-  "textures": {
-    "bottom": "more-doors-justfatlard:block/warped_classic_door_bottom",
-    "top": "more-doors-justfatlard:block/warped_classic_door_top"
-  }
-}

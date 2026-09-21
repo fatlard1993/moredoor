@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "moredoor-justfatlard:jungle_classic_door",
+  "result": {
+    "id": "minecraft:jungle_door",
+    "count": 1
+  }
+}

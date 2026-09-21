@@ -1,8 +1,0 @@
-{
-  "type": "minecraft:stonecutting",
-  "ingredient": "minecraft:spruce_door",
-  "result": {
-    "id": "more-doors-justfatlard:spruce_door",
-    "count": 1
-  }
-}

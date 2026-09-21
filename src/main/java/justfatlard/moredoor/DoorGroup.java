@@ -165,15 +165,6 @@ public final class DoorGroup {
 		return open ? openSquare(c, b) : closedSquare(c, b);
 	}
 
-	/** How far square (c, b) travels from the hinge, in squares; a sliding door moves all at once. */
-	public int distance(int c, int b) {
-		return switch (swing) {
-			case LEFT -> c;
-			case RIGHT -> width - 1 - c;
-			default -> 0;
-		};
-	}
-
 	/** Every square, in the given state. */
 	public List<BlockPos> squares(boolean open) {
 		List<BlockPos> all = new ArrayList<>(width * blocksTall());

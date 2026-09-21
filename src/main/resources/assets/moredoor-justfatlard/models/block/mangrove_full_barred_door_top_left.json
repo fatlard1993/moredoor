@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_top_left",
+  "textures": {
+    "bottom": "moredoor-justfatlard:block/mangrove_full_barred_door_bottom",
+    "top": "moredoor-justfatlard:block/mangrove_full_barred_door_top"
+  }
+}

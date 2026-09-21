@@ -1,8 +1,0 @@
-{
-  "type": "minecraft:stonecutting",
-  "ingredient": "more-doors-justfatlard:cherry_door",
-  "result": {
-    "id": "minecraft:cherry_door",
-    "count": 1
-  }
-}

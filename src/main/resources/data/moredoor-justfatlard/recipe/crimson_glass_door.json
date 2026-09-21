@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "##",
+    "o#",
+    "##"
+  ],
+  "key": {
+    "#": "minecraft:crimson_planks",
+    "o": "minecraft:glass_pane"
+  },
+  "result": {
+    "id": "moredoor-justfatlard:crimson_glass_door",
+    "count": 3
+  }
+}

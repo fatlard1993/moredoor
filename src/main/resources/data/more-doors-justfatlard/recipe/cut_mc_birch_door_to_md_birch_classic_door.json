@@ -1,8 +1,0 @@
-{
-  "type": "minecraft:stonecutting",
-  "ingredient": "minecraft:birch_door",
-  "result": {
-    "id": "more-doors-justfatlard:birch_classic_door",
-    "count": 1
-  }
-}

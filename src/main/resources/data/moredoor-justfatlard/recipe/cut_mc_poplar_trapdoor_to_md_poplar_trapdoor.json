@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "minecraft:poplar_trapdoor",
+  "result": {
+    "id": "moredoor-justfatlard:poplar_trapdoor",
+    "count": 1
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "###",
+    "#o#"
+  ],
+  "key": {
+    "#": "minecraft:poplar_planks",
+    "o": "minecraft:iron_bars"
+  },
+  "result": {
+    "id": "moredoor-justfatlard:poplar_barred_trapdoor",
+    "count": 2
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "minecraft:warped_door",
+  "result": {
+    "id": "moredoor-justfatlard:warped_door",
+    "count": 1
+  }
+}

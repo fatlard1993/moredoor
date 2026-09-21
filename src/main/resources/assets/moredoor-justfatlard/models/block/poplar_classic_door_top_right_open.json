@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_top_right_open",
+  "textures": {
+    "bottom": "moredoor-justfatlard:block/poplar_classic_door_bottom",
+    "top": "moredoor-justfatlard:block/poplar_classic_door_top"
+  }
+}

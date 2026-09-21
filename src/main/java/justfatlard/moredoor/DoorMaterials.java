@@ -23,7 +23,7 @@ public record DoorMaterials(String name, Block door, Block trapdoor, String text
 
 		for (Block block : BuiltInRegistries.BLOCK) {
 			String path = BuiltInRegistries.BLOCK.getKey(block).getPath();
-			if (!path.endsWith("_door") || path.startsWith("more_doors")) continue;
+			if (!path.endsWith("_door")) continue;
 
 			String material = path.substring(0, path.length() - "_door".length());
 			Block trapdoor = byName(material + "_trapdoor");

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "#o",
+    "#o",
+    "#o"
+  ],
+  "key": {
+    "#": "minecraft:cherry_planks",
+    "o": "minecraft:iron_bars"
+  },
+  "result": {
+    "id": "moredoor-justfatlard:cherry_full_barred_door",
+    "count": 3
+  }
+}

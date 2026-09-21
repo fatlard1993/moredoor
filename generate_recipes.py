@@ -19,7 +19,7 @@ import os
 import shutil
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-NS = "more-doors-justfatlard"
+NS = "moredoor-justfatlard"
 DATA = os.path.join(HERE, "src/main/resources/data")
 
 WOODS = ["oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "pale_oak", "poplar",

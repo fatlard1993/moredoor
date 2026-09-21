@@ -12,7 +12,7 @@
 		]
 	},
 	"depends": {
-		"more-doors-justfatlard": "*",
+		"moredoor-justfatlard": "*",
 		"fabric-client-gametest-api-v1": "*"
 	}
 }

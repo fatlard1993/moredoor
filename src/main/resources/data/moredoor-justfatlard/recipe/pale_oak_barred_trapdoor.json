@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "###",
+    "#o#"
+  ],
+  "key": {
+    "#": "minecraft:pale_oak_planks",
+    "o": "minecraft:iron_bars"
+  },
+  "result": {
+    "id": "moredoor-justfatlard:pale_oak_barred_trapdoor",
+    "count": 2
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "overview": [
+    "Doors with depth, doors that lock, doors that swing together, and six variants of every door and four of every trapdoor, for every material in the game."
+  ],
+  "versions": {
+    "1.0.4": [
+      "Full means full: the full glass and full barred doors are cut the whole way down, so stacking two leaves no longer leaves a band of timber across the middle of the wall.",
+      "A lever opens a double gate as one gate. Both leaves answer a signal together, the way they already answered a hand."
+    ],
+    "1.0.3": [
+      "Autoconnect can straighten a slid door's odd leaf. One leaf hung the wrong way used to break the whole wall, and nothing in the menu could put it right."
+    ],
+    "1.0.2": [
+      "Doors built out of squares: mega doors, sliding walls, corner hinges, and an autoconnect button that joins the leaves for you.",
+      "Menus for gates and trapdoors, a trapdoor that re-hinges on any edge, solid doors that keep the light out, and the full glass and barred trapdoors moved to the stonecutter."
+    ],
+    "1.0.0": [
+      "Doors that stand proud of the wall instead of lying flat in it, doors that lock, doors that swing together, and the same variants for every wood in the game."
+    ]
+  }
+}

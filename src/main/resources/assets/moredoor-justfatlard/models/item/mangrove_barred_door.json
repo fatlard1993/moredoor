@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "moredoor-justfatlard:item/mangrove_barred_door"
+  }
+}

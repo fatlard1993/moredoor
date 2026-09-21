@@ -25,8 +25,8 @@ import zlib
 from collections import Counter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BLOCK = os.path.join(HERE, "src/main/resources/assets/more-doors-justfatlard/textures/block")
-ITEM = os.path.join(HERE, "src/main/resources/assets/more-doors-justfatlard/textures/item")
+BLOCK = os.path.join(HERE, "src/main/resources/assets/moredoor-justfatlard/textures/block")
+ITEM = os.path.join(HERE, "src/main/resources/assets/moredoor-justfatlard/textures/item")
 
 CLEAR = (0, 0, 0, 0)
 _JAR = None

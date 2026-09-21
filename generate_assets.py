@@ -18,7 +18,7 @@ import json
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-NS = "more-doors-justfatlard"
+NS = "moredoor-justfatlard"
 ASSETS = os.path.join(HERE, "src/main/resources/assets", NS)
 DATA = os.path.join(HERE, "src/main/resources/data", NS)
 MINECRAFT_DATA = os.path.join(HERE, "src/main/resources/data/minecraft")

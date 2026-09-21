@@ -3,13 +3,14 @@
   "package": "justfatlard.moredoor.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "FenceConnectionMixin",
     "DoorStackMixin",
     "DoorSwingMixin",
+    "FenceConnectionMixin",
     "GateRedstoneMixin",
-    "TrapDoorTypeAccessor",
+    "OpenGateShapeMixin",
     "PropertiesAccessor",
-    "SolidDoorLightMixin"
+    "SolidDoorLightMixin",
+    "TrapDoorTypeAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

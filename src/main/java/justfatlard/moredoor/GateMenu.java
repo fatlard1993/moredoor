@@ -98,11 +98,11 @@ public final class GateMenu {
 		boolean isLit = id.equals(idOf(lit));
 		boolean allowed = !pair || id.equals(DOUBLE);
 		return Map.of(
-			ComponentType.PROP_ICON, "more-doors-justfatlard:swing/" + id + (isLit ? "_lit" : ""),
+			ComponentType.PROP_ICON, "moredoor-justfatlard:swing/" + id + (isLit ? "_lit" : ""),
 			ComponentType.PROP_STYLE, isLit ? "pressed" : "default",
 			ComponentType.PROP_ENABLED, String.valueOf(allowed),
 			ComponentType.PROP_TOOLTIP_KEY, allowed
-				? "more-doors-justfatlard.gate.set." + id : "more-doors-justfatlard.gate.pair");
+				? "moredoor-justfatlard.gate.set." + id : "moredoor-justfatlard.gate.pair");
 	}
 
 	private static void choose(ServerPlayer player, GateSwing seen) {
@@ -119,7 +119,7 @@ public final class GateMenu {
 		GateSwings swings = GateSwings.get(level);
 		for (BlockPos gate : GateBank.gatesOf(level, now.pos(), state)) swings.set(level, gate, own);
 		level.playSound(null, now.pos(), SoundEvents.ITEM_FRAME_ROTATE_ITEM, SoundSource.BLOCKS, 0.8F, 1.0F);
-		player.sendOverlayMessage(Component.translatable("more-doors-justfatlard.gate.set." + idOf(seen)));
+		player.sendOverlayMessage(Component.translatable("moredoor-justfatlard.gate.set." + idOf(seen)));
 
 		List<ComponentUpdate> updates = new ArrayList<>();
 		for (String id : BUTTONS) updates.add(new ComponentUpdate(id, props(id, seen, now.pair())));

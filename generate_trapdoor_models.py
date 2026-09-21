@@ -25,7 +25,7 @@ from generate_door_jambs import find_jar
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(HERE, "src/main/resources/assets")
-MOD_ID = "more-doors-justfatlard"
+MOD_ID = "moredoor-justfatlard"
 TEMPLATES = os.path.join(ASSETS, "minecraft/models/block")
 
 FRAME = 2.0

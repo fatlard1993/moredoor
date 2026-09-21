@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "moredoor-justfatlard:oak_door",
+  "result": {
+    "id": "moredoor-justfatlard:oak_classic_door",
+    "count": 1
+  }
+}

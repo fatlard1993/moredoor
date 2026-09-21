@@ -12,6 +12,8 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -96,7 +98,7 @@ public final class DoorSwing {
 			return true;
 		}
 
-		Motion motion = new Motion(level, group, open, sound);
+		Motion motion = new Motion(level, by, group, open, sound);
 		if (!motion.step()) return false;
 		swingSound(level, group, open, sound);
 		level.gameEvent(by, open ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, group.origin);
@@ -178,10 +180,19 @@ public final class DoorSwing {
 		private final List<boolean[]> swung = new ArrayList<>();
 		private int at;
 		private boolean returning;
+		/**
+		 * Squares the leaf passes over without ever coming to rest on: the inside of the quarter
+		 * circle it turns through. Empty for a slide, which travels along its own line and sweeps
+		 * nothing else.
+		 */
+		private final List<BlockPos> arc = new ArrayList<>();
+		/** Whoever set it going, to be told when it cannot get there; null when a signal did. */
+		private final Entity by;
 		private int wait;
 
-		Motion(ServerLevel level, DoorGroup group, boolean toOpen, boolean sound) {
+		Motion(ServerLevel level, Entity by, DoorGroup group, boolean toOpen, boolean sound) {
 			this.level = level;
+			this.by = by;
 			this.group = group;
 			this.toOpen = toOpen;
 			this.sound = sound;
@@ -218,24 +229,50 @@ public final class DoorSwing {
 					swung.add(out);
 				}
 			} else {
-				int reach = 0;
-				for (int c = 0; c < group.width; c++) reach = Math.max(reach, group.distance(c, 0));
-				for (int k = 0; k <= reach; k++) {
+				// Two frames, shut and swung, and nothing between them.
+				//
+				// A hinge has no halfway that blocks can hold: part way round, the leaf lies across
+				// the corners of its squares. What used to stand in for it was swinging the columns
+				// nearest the hinge and leaving the rest where they were - so a door three wide that
+				// met something on its way opened as two leaves joined together with the third still
+				// in the jamb. That is not a door part way open, it is a door in two pieces, and no
+				// ordering of the columns fixes it. The whole door goes, or none of it does.
+				for (int k = 0; k <= 1; k++) {
 					BlockPos[] frame = new BlockPos[squares()];
 					boolean[] out = new boolean[squares()];
 					for (int c = 0; c < group.width; c++) {
 						for (int b = 0; b < tall; b++) {
-							// The hinge column swings with the first column out, and stays swung
-							// until the last comes home: frame zero is the only closed one.
-							boolean swings = k > 0 && group.distance(c, b) <= k;
-							frame[c * tall + b] = swings ? group.openSquare(c, b) : group.closedSquare(c, b);
-							out[c * tall + b] = swings;
+							frame[c * tall + b] = k > 0 ? group.openSquare(c, b) : group.closedSquare(c, b);
+							out[c * tall + b] = k > 0;
 						}
 					}
 					frames.add(frame);
 					swung.add(out);
 				}
 			}
+			// What the leaf sweeps on its way round, which is not where it ends up.
+			//
+			// A door turning about its hinge covers the quarter circle of its own width. Only the
+			// far edge of that lands anywhere: everything inside is passed over, and nothing was
+			// ever asked about it - so a block sitting in the middle of the arc was swept straight
+			// through. It went unnoticed while a blocked door stopped partway and looked stuck; a
+			// door that now goes in one move either clears its arc or does not turn.
+			if (!group.swing.isSlide() && group.width > 1) {
+				Direction along = DoorGroup.along(group.facing);
+				boolean left = group.swing == Swing.LEFT;
+				BlockPos hinge = left ? group.origin : group.origin.relative(along, group.width - 1);
+				Direction back = left ? along : along.getOpposite();
+				int reach = group.width - 1;
+				for (int a = 1; a <= reach; a++) {
+					for (int f = 1; f <= reach; f++) {
+						if (a * a + f * f > reach * reach) continue;
+						for (int b = 0; b < tall; b++) {
+							arc.add(hinge.relative(back, a).relative(group.facing, f).above(b));
+						}
+					}
+				}
+			}
+
 			// Closing is opening run backwards: the frames are read from the far end.
 			if (!toOpen) {
 				java.util.Collections.reverse(frames);
@@ -298,6 +335,19 @@ public final class DoorSwing {
 			}
 			at = next;
 			remember();
+
+			// Swung, and now asked what it went over. The door opens whatever is in its arc - it
+			// has to, or there is nothing to see - and then finds the thing it caught on, knocks
+			// against it and comes back. Opening only: a door on its way home that brushes
+			// something is already going where it should.
+			if (toOpen && !returning && at == frames.size() - 1) {
+				BlockPos caught = sweptOn();
+				if (caught != null) {
+					struck(caught);
+					returning = true;
+					wait = HIT_TICKS;
+				}
+			}
 			return true;
 		}
 
@@ -310,12 +360,26 @@ public final class DoorSwing {
 		}
 
 		private void struck(BlockPos dest) {
+			// The knock and the chips off the block, and nothing in words. A door stopped against
+			// something is as often somebody's mechanism - a slide held shut to close itself again -
+			// as it is a door in trouble, and a mechanism that narrates itself every cycle is worse
+			// than one that says nothing.
 			BlockState wall = level.getBlockState(dest);
 			level.playSound(null, dest, wall.getSoundType().getHitSound(), SoundSource.BLOCKS, 1.0F, 0.8F);
 			if (!wall.isAir()) {
 				level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, wall),
 					dest.getX() + 0.5, dest.getY() + 0.5, dest.getZ() + 0.5, 6, 0.3, 0.3, 0.3, 0.0);
 			}
+		}
+
+		/** Whatever the leaf passed over on its way round and cannot stay clear of, or null. */
+		private BlockPos sweptOn() {
+			Set<BlockPos> standing = new HashSet<>(List.of(current()));
+			for (BlockPos over : arc) {
+				if (standing.contains(over)) continue;
+				if (level.isOutsideBuildHeight(over) || !level.getBlockState(over).canBeReplaced()) return over;
+			}
+			return null;
 		}
 
 		/** @return whether the door has come to rest */

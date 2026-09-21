@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "###",
+    "#o#"
+  ],
+  "key": {
+    "#": "minecraft:poplar_planks",
+    "o": "minecraft:glass_pane"
+  },
+  "result": {
+    "id": "moredoor-justfatlard:poplar_glass_trapdoor",
+    "count": 2
+  }
+}

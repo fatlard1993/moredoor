@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "moredoor-justfatlard:acacia_classic_trapdoor",
+  "result": {
+    "id": "minecraft:acacia_trapdoor",
+    "count": 1
+  }
+}

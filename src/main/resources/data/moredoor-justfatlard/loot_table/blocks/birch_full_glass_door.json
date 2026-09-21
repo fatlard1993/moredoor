@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "moredoor-justfatlard:birch_full_glass_door",
+            "state": {
+              "half": "lower"
+            }
+          },
+          "name": "moredoor-justfatlard:birch_full_glass_door"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "moredoor-justfatlard:blocks/birch_full_glass_door"
+}

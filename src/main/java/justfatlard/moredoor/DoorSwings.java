@@ -28,7 +28,7 @@ import net.minecraft.world.level.saveddata.SavedDataType;
  * squares are standing a room away looking closed, nothing in the world says they were a door.
  */
 public final class DoorSwings extends SavedData {
-	private static final String STORAGE_KEY = "more_doors_swings";
+	private static final String STORAGE_KEY = "swings";
 
 	/** An open door: what it is, and the closed frame it came from. */
 	public record OpenDoor(String block, Direction facing, DoorHingeSide hinge, Swing swing,
@@ -75,7 +75,7 @@ public final class DoorSwings extends SavedData {
 	public static final Codec<DoorSwings> CODEC = Data.CODEC.xmap(DoorSwings::fromData, DoorSwings::toData);
 
 	private static final SavedDataType<DoorSwings> TYPE = new SavedDataType<>(
-		Identifier.parse(STORAGE_KEY), DoorSwings::new, CODEC, DataFixTypes.LEVEL);
+		Identifier.fromNamespaceAndPath(Main.MOD_ID, STORAGE_KEY), DoorSwings::new, CODEC, DataFixTypes.LEVEL);
 
 	/** Leaves hung some way other than their block says, by lower half. */
 	private final Map<Long, Swing> settings = new HashMap<>();

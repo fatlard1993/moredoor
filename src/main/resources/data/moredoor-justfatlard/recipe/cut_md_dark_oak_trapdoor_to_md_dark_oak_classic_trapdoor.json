@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "moredoor-justfatlard:dark_oak_trapdoor",
+  "result": {
+    "id": "moredoor-justfatlard:dark_oak_classic_trapdoor",
+    "count": 1
+  }
+}

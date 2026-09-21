@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate More Doors' mod menu icon: one door, three ways.
+"""Generate Moredoor's mod menu icon: one door, three ways.
 
 The three variants side by side is the mod in one look, because the whole point
 is that a material now offers a choice rather than whichever face vanilla
@@ -20,8 +20,8 @@ import zlib
 from collections import Counter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BLOCK = os.path.join(HERE, "src/main/resources/assets/more-doors-justfatlard/textures/block")
-OUT = os.path.join(HERE, "src/main/resources/assets/more-doors-justfatlard/icon.png")
+BLOCK = os.path.join(HERE, "src/main/resources/assets/moredoor-justfatlard/textures/block")
+OUT = os.path.join(HERE, "src/main/resources/assets/moredoor-justfatlard/icon.png")
 
 CLEAR = (0, 0, 0, 0)
 _JAR = None

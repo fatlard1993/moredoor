@@ -18,6 +18,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.WeatheringCopperDoorBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
@@ -30,6 +31,7 @@ public final class DoorInteraction {
 	public static void register() {
 		UseBlockCallback.EVENT.register(DoorInteraction::onUseBlock);
 		GateBank.register();
+		GateMove.register();
 		TrapBank.register();
 		SwingMenu.register();
 		GateMenu.register();
@@ -43,7 +45,7 @@ public final class DoorInteraction {
 			if (!(player instanceof ServerPlayer breaker)) return true;
 
 			DoorLocks locks = DoorLocks.get(serverLevel);
-			if (!locks.refuses(breaker, serverLevel, pos, state)) return true;
+			if (!locks.refuses(breaker, serverLevel, pos, state, DoorLocks.Use.ALTER)) return true;
 
 			refuse(serverLevel, breaker, locks, pos, state);
 			return false;
@@ -52,6 +54,16 @@ public final class DoorInteraction {
 		// And a door that is gone is not locked any more, nor hung any way, nor open.
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
 			if (!(level instanceof ServerLevel serverLevel)) return;
+			// A leaf broken out of an open gate leaves a gate that can never be shut again, and a
+			// record of one that is no longer there. Forget it: what is left stands as it is.
+			// Gates only: this runs for every block anybody breaks, and unmarking a clod of dirt
+			// costs a round trip to the client for nothing.
+			if (state.getBlock() instanceof net.minecraft.world.level.block.FenceGateBlock) {
+				GateSwings gates = GateSwings.get(serverLevel);
+				GateSwings.OpenGate standing = gates.openAt(serverLevel, pos);
+				if (standing != null) gates.setOpen(standing, false);
+				gates.forget(serverLevel, pos);
+			}
 			DoorSwings swings = DoorSwings.get(serverLevel);
 			DoorSwings.OpenDoor open = swings.openAt(pos);
 			if (open != null) swings.clearOpen(open);
@@ -72,9 +84,14 @@ public final class DoorInteraction {
 		BlockState state = serverLevel.getBlockState(pos);
 
 		if (!(state.getBlock() instanceof DoorBlock door)) return InteractionResult.PASS;
-		// Only doors that are doors. A subclass has a use of its own - the amethyst door is a way
-		// into somebody's geode - and swinging it here would answer the click before it could.
-		if (door.getClass() != DoorBlock.class) return InteractionResult.PASS;
+		// Only doors whose click means nothing but "door". A subclass usually has a use of its own -
+		// the amethyst door is a way into somebody's geode - and swinging it here would answer the
+		// click before it could. Vanilla's copper is the exception: that subclass exists to oxidise,
+		// and a copper door is otherwise exactly a door. Excluding it took the hinge menu, the lock
+		// and the turn off every copper door in the world, while copper trapdoors kept all three.
+		if (door.getClass() != DoorBlock.class && !(door instanceof WeatheringCopperDoorBlock)) {
+			return InteractionResult.PASS;
+		}
 
 		// Mid-bounce, the door is nobody's to touch.
 		if (DoorSwing.isMoving(serverLevel, pos)) return InteractionResult.SUCCESS;
@@ -91,13 +108,25 @@ public final class DoorInteraction {
 			return fitLock(serverLevel, opener, locks, pos, state, held);
 		}
 
+		// Working the handle is one thing, changing the door another, and the two part company on a
+		// door left open to everyone: anybody may walk through it, and it still turns and re-hangs
+		// only for the people it belongs to. On an unlocked door there is nothing to refuse, so
+		// this asks nothing of anybody.
 		if (player.isSecondaryUseActive() && turnsWith(held, door)) {
+			if (locks.refuses(opener, serverLevel, pos, state, DoorLocks.Use.ALTER)) {
+				refuse(serverLevel, opener, locks, pos, state);
+				return InteractionResult.SUCCESS;
+			}
 			return turn(serverLevel, opener, pos, state);
 		}
 
 		// A sneaking empty hand asks how the door hangs. Main hand only: the same click reaches
 		// here once per hand, and the menu should open once.
 		if (player.isSecondaryUseActive() && held.isEmpty() && hand == InteractionHand.MAIN_HAND) {
+			if (locks.refuses(opener, serverLevel, pos, state, DoorLocks.Use.ALTER)) {
+				refuse(serverLevel, opener, locks, pos, state);
+				return InteractionResult.SUCCESS;
+			}
 			SwingMenu.open(opener, pos, state);
 			return InteractionResult.SUCCESS;
 		}
@@ -122,7 +151,7 @@ public final class DoorInteraction {
 		ingot.consume(1, owner);
 
 		level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.8F, 1.4F);
-		owner.sendSystemMessage(Component.translatable("more-doors-justfatlard.locked"));
+		owner.sendSystemMessage(Component.translatable("moredoor-justfatlard.locked"));
 
 		return InteractionResult.SUCCESS;
 	}
@@ -177,11 +206,7 @@ public final class DoorInteraction {
 			// leaves stand a room from home, and the walker lists those, not home.
 			done.addAll(group.squares(group.open));
 			done.addAll(group.feet());
-			if (!DoorSwing.set(level, opener, group, opening, sound) && group.swing.isSlide() && opener != null) {
-				// A hinged door that hits something bounces, which is its own message. A slide
-				// that hits something never moves, so it has to be said.
-				opener.sendOverlayMessage(Component.translatable("more-doors-justfatlard.swing.no_room"));
-			}
+			DoorSwing.set(level, opener, group, opening, sound);
 			sound = false;
 		}
 	}
@@ -227,8 +252,8 @@ public final class DoorInteraction {
 		String owner = locks.lockedBy(level, pos, state);
 
 		player.sendOverlayMessage(owner == null
-			? Component.translatable("more-doors-justfatlard.locked.refused")
-			: Component.translatable("more-doors-justfatlard.locked.by", owner));
+			? Component.translatable("moredoor-justfatlard.locked.refused")
+			: Component.translatable("moredoor-justfatlard.locked.by", owner));
 		level.playSound(null, pos, SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1.0F, 1.0F);
 	}
 }

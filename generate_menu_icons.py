@@ -5,7 +5,7 @@ with a dark shadow so they read on the button's grey; the lit copies are the pre
 from PIL import Image, ImageDraw
 
 SIZE = 22
-OUT = "src/main/resources/assets/more-doors-justfatlard/textures/gui/sprites/swing/%s.png"
+OUT = "src/main/resources/assets/moredoor-justfatlard/textures/gui/sprites/swing/%s.png"
 WHITE, LIT, SHADOW = (255, 255, 255, 255), (255, 255, 128, 255), (32, 32, 32, 200)
 
 

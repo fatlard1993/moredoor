@@ -52,7 +52,7 @@ public final class Showcase implements FabricClientGameTest {
 				.formatted(left - 4, y - 1, z + 1, left + DOORS.length * 2 + 2, y - 1, z + 18));
 			for (int i = 0; i < DOORS.length; i++) {
 				int x = left + i * 2;
-				String door = "more-doors-justfatlard:" + DOORS[i];
+				String door = "moredoor-justfatlard:" + DOORS[i];
 				server.runCommand("setblock %d %d %d %s[facing=south,half=lower,hinge=left,open=false]"
 					.formatted(x, y, z, door));
 				server.runCommand("setblock %d %d %d %s[facing=south,half=upper,hinge=left,open=false]"
@@ -64,7 +64,7 @@ public final class Showcase implements FabricClientGameTest {
 			context.waitTicks(10);
 			for (int i = 0; i < DOORS.length; i++) {
 				int x = left + i * 2;
-				String door = "more-doors-justfatlard:" + DOORS[i];
+				String door = "moredoor-justfatlard:" + DOORS[i];
 				server.runCommand("setblock %d %d %d %s[facing=south,half=lower,hinge=left,open=false]"
 					.formatted(x, y, z, door));
 				server.runCommand("setblock %d %d %d %s[facing=south,half=upper,hinge=left,open=false]"

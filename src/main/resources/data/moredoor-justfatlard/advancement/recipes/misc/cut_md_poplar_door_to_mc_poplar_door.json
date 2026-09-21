@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "moredoor-justfatlard:cut_md_poplar_door_to_mc_poplar_door"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "moredoor-justfatlard:cut_md_poplar_door_to_mc_poplar_door"
+    ]
+  }
+}

@@ -70,6 +70,14 @@ public final class GateBank {
 		return InteractionResult.SUCCESS;
 	}
 
+	/** Said to whoever tried, because a gate that will not budge otherwise says nothing at all. */
+	private static void blocked(Player player) {
+		if (player instanceof net.minecraft.server.level.ServerPlayer told) {
+			told.sendOverlayMessage(net.minecraft.network.chat.Component.translatable(
+				"moredoor-justfatlard.gate.blocked"));
+		}
+	}
+
 	/**
 	 * A signal reaches every gate a click would.
 	 *
