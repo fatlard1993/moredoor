@@ -254,5 +254,9 @@
   "moredoor-justfatlard.swing.lock_anyone_tip": "Press to unlock it altogether",
   "moredoor-justfatlard.swing.lock_on_said": "Locked - only you and ops can open or break this door",
   "moredoor-justfatlard.swing.lock_anyone_said": "Open to everyone - anybody can use this door, only you and ops can break or re-hang it",
-  "moredoor-justfatlard.swing.lock_off_said": "Unlocked - anyone can use this door again"
+  "moredoor-justfatlard.swing.lock_off_said": "Unlocked - anyone can use this door again",
+  "moredoor-justfatlard.trapdoor.autoconnect": "Autoconnect",
+  "moredoor-justfatlard.trapdoor.autoconnect_tip": "Hang every trapdoor touching this one the way this one hangs, so they open as one hatch",
+  "moredoor-justfatlard.trapdoor.autoconnected": "Brought %s trapdoor(s) into this hatch",
+  "moredoor-justfatlard.trapdoor.autoconnect_none": "They already hang together"
 }

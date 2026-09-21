@@ -50,12 +50,17 @@ public final class TrapMenu {
 	private static final String BOTTOM = "hatch_bottom";
 	private static final String[] HALVES = {TOP, BOTTOM};
 
+	private static final String AUTOCONNECT = "autoconnect";
+
 	private static final int BUTTON = 24;
 	private static final int GAP = 4;
 	private static final int WIDTH = 176;
 	private static final int EDGE_Y = 8;
 	private static final int HALF_Y = EDGE_Y + BUTTON + GAP;
+	private static final int LINK_Y = HALF_Y + BUTTON + 8;
+	private static final int ROW = 20;
 	private static final int HEIGHT = HALF_Y + BUTTON + 8;
+	private static final int HEIGHT_LINKED = LINK_Y + ROW + 8;
 
 	/** What a player has open: the trapdoor, and the way they were looking at it. */
 	private record Target(BlockPos pos, Direction toward, String screenId) {}
@@ -69,14 +74,22 @@ public final class TrapMenu {
 		for (String half : HALVES) {
 			PandoricalApi.screens().onAction(TYPE, half, (player, data) -> chooseHalf(player, half));
 		}
+		PandoricalApi.screens().onAction(TYPE, AUTOCONNECT, (player, data) -> autoconnect(player));
 		PandoricalApi.screens().onClose(TYPE, player -> target.remove(player.getUUID()));
 	}
 
 	public static void open(ServerPlayer player, BlockPos pos, BlockState state) {
 		Direction toward = player.getDirection();
 
-		ScreenBuilder screen = new ScreenBuilder(TYPE).size(WIDTH, HEIGHT).title("Trapdoor");
-		screen.panel("frame", 0, 0, WIDTH, HEIGHT, Map.of());
+		// Only where there is something to bring in: a trapdoor of the same kind touching this one
+		// that is not already part of the same hatch. On a lone shutter the button would be a
+		// button for nothing.
+		boolean loose = TrapBank.touchingOf(player.level(), pos, state).size()
+			> TrapBank.bankOf(player.level(), pos, state).size();
+		int height = loose ? HEIGHT_LINKED : HEIGHT;
+
+		ScreenBuilder screen = new ScreenBuilder(TYPE).size(WIDTH, height).title("Trapdoor");
+		screen.panel("frame", 0, 0, WIDTH, height, Map.of());
 
 		String litEdge = edgeIdOf(state.getValue(TrapDoorBlock.FACING), toward);
 		int x = (WIDTH - EDGES.length * BUTTON - (EDGES.length - 1) * GAP) / 2;
@@ -90,6 +103,12 @@ public final class TrapMenu {
 		for (String half : HALVES) {
 			screen.button(half, x, HALF_Y, BUTTON, BUTTON, props(half, half.equals(litHalf)));
 			x += BUTTON + GAP;
+		}
+
+		if (loose) {
+			screen.button(AUTOCONNECT, 8, LINK_Y, WIDTH - 16, ROW, Map.of(
+				ComponentType.PROP_LABEL_KEY, "moredoor-justfatlard.trapdoor.autoconnect",
+				ComponentType.PROP_TOOLTIP_KEY, "moredoor-justfatlard.trapdoor.autoconnect_tip"));
 		}
 
 		target.put(player.getUUID(), new Target(pos, toward, screen.screenId()));
@@ -143,6 +162,43 @@ public final class TrapMenu {
 	 * <p>Closed because an open trapdoor stands where its new edge is about to be, and a
 	 * hatch that changed edge while open would be half in the floor and half out of it.
 	 */
+	/**
+	 * Hang every trapdoor touching this one the way this one hangs, so they are one hatch.
+	 *
+	 * <p>The same offer the door menu makes, and it needs the looser walk: a shutter in the wrong
+	 * half or turned across the gap is not in this hatch at all, which is exactly why somebody is
+	 * reaching for this button.
+	 */
+	private static void autoconnect(ServerPlayer player) {
+		Target now = target.get(player.getUUID());
+		if (now == null) return;
+		ServerLevel level = player.level();
+		BlockState state = level.getBlockState(now.pos());
+		if (!(state.getBlock() instanceof TrapDoorBlock)) return;
+
+		Direction facing = state.getValue(TrapDoorBlock.FACING);
+		Half half = state.getValue(TrapDoorBlock.HALF);
+		int brought = 0;
+		for (BlockPos each : TrapBank.touchingOf(level, now.pos(), state)) {
+			BlockState there = level.getBlockState(each);
+			if (!(there.getBlock() instanceof TrapDoorBlock)) continue;
+			if (there.getValue(TrapDoorBlock.FACING) == facing
+					&& there.getValue(TrapDoorBlock.HALF) == half) continue;
+			level.setBlock(each, there
+				.setValue(TrapDoorBlock.OPEN, false)
+				.setValue(TrapDoorBlock.FACING, facing)
+				.setValue(TrapDoorBlock.HALF, half), Block.UPDATE_ALL);
+			brought++;
+		}
+
+		level.playSound(null, now.pos(), SoundEvents.ITEM_FRAME_ROTATE_ITEM,
+			SoundSource.BLOCKS, 0.8F, 1.0F);
+		player.sendOverlayMessage(Component.translatable(brought == 0
+			? "moredoor-justfatlard.trapdoor.autoconnect_none"
+			: "moredoor-justfatlard.trapdoor.autoconnected", brought));
+		PandoricalApi.screens().close(player, TYPE);
+	}
+
 	private static void apply(ServerPlayer player, Target now, Direction facing, Half half) {
 		ServerLevel level = player.level();
 		BlockState state = level.getBlockState(now.pos());

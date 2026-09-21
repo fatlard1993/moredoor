@@ -95,6 +95,20 @@ public final class TrapBank {
 		return walk(level, pos, like, TrapBank::opensWith);
 	}
 
+	/**
+	 * Every trapdoor of this kind touching this one, however it happens to be hung.
+	 *
+	 * <p>Looser than both the others on purpose. {@link #hatchOf} already requires the same half
+	 * and the same axis, so a shutter turned the wrong way or sitting in the other half of its
+	 * block is not merely in a different hatch - it is invisible to the walk entirely, and there
+	 * is no way to ask for it to be brought into line. This is what "make these one hatch" has to
+	 * start from.
+	 */
+	public static Set<BlockPos> touchingOf(Level level, BlockPos pos, BlockState like) {
+		return walk(level, pos, like, (other, ignored) ->
+			other.getBlock() == like.getBlock() && other.getBlock() instanceof TrapDoorBlock);
+	}
+
 	/** Every trapdoor hung the same way and touching this one, including it. */
 	public static Set<BlockPos> bankOf(Level level, BlockPos pos, BlockState like) {
 		return walk(level, pos, like, TrapBank::joins);
