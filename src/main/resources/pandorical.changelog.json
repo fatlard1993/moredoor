@@ -3,6 +3,11 @@
     "Doors with depth, doors that lock, doors that swing together, and six variants of every door and four of every trapdoor, for every material in the game."
   ],
   "versions": {
+    "1.0.5": [
+      "A gate standing beside another can be hung left, right or in the middle, like any other gate.",
+      "The menu used to offer it nothing but the middle, for a merged wide gate that nothing ever drew.",
+      "Hanging a gate sets that gate and the storeys above it, and leaves the gates beside it alone."
+    ],
     "1.0.4": [
       "Full means full: the glass and barred doors are cut the whole way down.",
       "Stacking two leaves no longer leaves a band of timber across the wall.",
