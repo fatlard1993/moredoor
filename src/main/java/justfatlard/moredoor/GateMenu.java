@@ -24,16 +24,11 @@ import net.minecraft.world.level.block.state.BlockState;
  *
  * <p>Three pictures, one lit: the gate from above with the player at the bottom, opening as
  * one leaf from the left post, as the two leaves the game gives it, or as one leaf from the
- * right post. Left and right are the player's, from the side they opened the menu on. A gate
- * stacked on another is one tall gate, and is hung as one.
+ * right post. Left and right are the player's, from the side they opened the menu on.
  *
- * <p>Every gate is hung on its own, a gate beside another included. The pair used to be offered
- * nothing but the middle, on the grounds that it is drawn as one wide gate whose leaf would be two
- * blocks long and longer than a block model can be - but nothing draws it that way. {@link
- * GateGroup} is the half-built answer to that and says so itself, and {@link GateMove} is reached
- * only by a redstone close, so two gates side by side stay two one-block gates that happen to open
- * together. Each can therefore hang whichever way it likes. Put the restriction back with the
- * merged model, not before it.
+ * <p>Gates beside and on top of one another are one gate, and are hung as one: every gate of it
+ * carries the same hinge, and a wide one swings its blocks out as a single leaf from its end post,
+ * or as two leaves meeting in the middle ({@link GateGroup}).
  */
 public final class GateMenu {
 	private GateMenu() {}
@@ -50,8 +45,8 @@ public final class GateMenu {
 	private static final int ROW_Y = 8;
 	private static final int HEIGHT = ROW_Y + BUTTON + 8;
 
-	/** What a player has open: the gate and the side they see it from. */
-	private record Target(BlockPos pos, Direction toward, String screenId) {}
+	/** What a player has open: the gate, the level it is in, and the side they see it from. */
+	private record Target(BlockPos pos, ServerLevel level, Direction toward, String screenId) {}
 
 	private static final Map<UUID, Target> target = new ConcurrentHashMap<>();
 
@@ -69,13 +64,13 @@ public final class GateMenu {
 
 		ScreenBuilder screen = new ScreenBuilder(TYPE).size(WIDTH, HEIGHT).title("Gate");
 		screen.panel("frame", 0, 0, WIDTH, HEIGHT, Map.of());
-		GateSwing lit = seen(GateSwings.get(level).settingOf(pos), toward, facing);
+		GateSwing lit = seen(GateSwings.get(level).agreedBy(level, GateBank.gatesOf(level, pos, state), facing), toward, facing);
 		int x = (WIDTH - 3 * BUTTON - 2 * GAP) / 2;
 		for (String id : BUTTONS) {
 			screen.button(id, x, ROW_Y, BUTTON, BUTTON, props(id, lit));
 			x += BUTTON + GAP;
 		}
-		target.put(player.getUUID(), new Target(pos, toward, screen.screenId()));
+		target.put(player.getUUID(), new Target(pos, level, toward, screen.screenId()));
 		PandoricalApi.screens().open(player, screen.build());
 	}
 
@@ -86,7 +81,10 @@ public final class GateMenu {
 		return along >= 0 ? facing : facing.getOpposite();
 	}
 
-	/** The gate's own hinge side as the player sees it: the same from behind, mirrored from in front. */
+	/**
+	 * The gate's own hinge side as the player sees it: the same from behind, mirrored from in
+	 * front. Mirroring twice is no change, so the same turn takes the player's side to the gate's.
+	 */
 	private static GateSwing seen(GateSwing own, Direction toward, Direction facing) {
 		return toward == facing ? own : own.mirrored();
 	}
@@ -104,33 +102,23 @@ public final class GateMenu {
 			ComponentType.PROP_TOOLTIP_KEY, "moredoor-justfatlard.gate.set." + id);
 	}
 
-	/** This gate's own column: the blocks stacked on it, without the gates standing beside it. */
-	private static List<BlockPos> storeys(ServerLevel level, BlockPos pos, BlockState state) {
-		List<BlockPos> column = new ArrayList<>();
-		column.add(pos);
-		for (Direction step : new Direction[] {Direction.UP, Direction.DOWN}) {
-			for (BlockPos at = pos.relative(step); GateBank.joins(level.getBlockState(at), state);
-					at = at.relative(step)) {
-				column.add(at);
-			}
-		}
-		return column;
-	}
-
 	private static void choose(ServerPlayer player, GateSwing seen) {
 		Target now = target.get(player.getUUID());
 		if (now == null) return;
 		ServerLevel level = player.level();
+		if (level != now.level() || !player.isWithinBlockInteractionRange(now.pos(), 1.0)) return;
 		BlockState state = level.getBlockState(now.pos());
 		if (!(state.getBlock() instanceof FenceGateBlock)) return;
+		GateSwings swings = GateSwings.get(level);
+		// An open wide gate's blocks stand where its leaves are; it is hung again once it is shut.
+		if (swings.openAt(now.pos()) != null) {
+			player.sendOverlayMessage(Component.translatable("moredoor-justfatlard.gate.shut_first"));
+			return;
+		}
 		Direction facing = state.getValue(FenceGateBlock.FACING);
 		GateSwing own = seen(seen, now.toward(), facing);
 
-		// Every storey of this gate, and only this one. GateBank.gatesOf walks along the line as
-		// well as up it, which is right for opening a bank together and wrong here: a gate beside
-		// this one is its own gate and keeps its own hinge, or a pair could never meet in the middle.
-		GateSwings swings = GateSwings.get(level);
-		for (BlockPos gate : storeys(level, now.pos(), state)) swings.set(level, gate, own);
+		swings.hang(level, GateBank.gatesOf(level, now.pos(), state), facing, own);
 		level.playSound(null, now.pos(), SoundEvents.ITEM_FRAME_ROTATE_ITEM, SoundSource.BLOCKS, 0.8F, 1.0F);
 		player.sendOverlayMessage(Component.translatable("moredoor-justfatlard.gate.set." + idOf(seen)));
 

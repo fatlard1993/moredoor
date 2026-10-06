@@ -54,16 +54,6 @@ public final class DoorInteraction {
 		// And a door that is gone is not locked any more, nor hung any way, nor open.
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
 			if (!(level instanceof ServerLevel serverLevel)) return;
-			// A leaf broken out of an open gate leaves a gate that can never be shut again, and a
-			// record of one that is no longer there. Forget it: what is left stands as it is.
-			// Gates only: this runs for every block anybody breaks, and unmarking a clod of dirt
-			// costs a round trip to the client for nothing.
-			if (state.getBlock() instanceof net.minecraft.world.level.block.FenceGateBlock) {
-				GateSwings gates = GateSwings.get(serverLevel);
-				GateSwings.OpenGate standing = gates.openAt(serverLevel, pos);
-				if (standing != null) gates.setOpen(standing, false);
-				gates.forget(serverLevel, pos);
-			}
 			DoorSwings swings = DoorSwings.get(serverLevel);
 			DoorSwings.OpenDoor open = swings.openAt(pos);
 			if (open != null) swings.clearOpen(open);

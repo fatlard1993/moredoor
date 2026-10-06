@@ -94,9 +94,9 @@ Where a fence meets a door, the door gets a jamb: a post at its edge where the f
 
 ## Large Gates
 
-Fence gates side by side, or stacked, open as one: use any gate in the block and the whole block takes its state, facing away from you the way a single gate does. On Pandorical clients a row is drawn as one wide gate, the shared posts gone and the bars running through, each end swinging from its own remaining post with a clear span between; a stack is drawn as one tall gate, the posts running the whole height rather than stopping at every storey.
+Fence gates side by side, or stacked, are one gate: use any of it and the whole gate answers, facing away from you the way a single gate does. Shut, a row is drawn as one wide gate, the shared posts gone and the bars running through, and a stack as one tall gate, the posts running the whole height rather than stopping at every storey. A gate more than one wide opens the way the large doors do: its blocks really swing out along the leaf, so the open leaf is solid, can be clicked to shut the gate, and will not swing into anything - a block where the leaf would land stops it with a knock, and one in the arc it turns through sends it back. A row longer than seventeen opens as several gates side by side.
 
-**Sneak and right-click a gate with an empty hand** for the same kind of menu a door has: one leaf from the left post, one from the right, or the two the game gives it, left and right as you see them. A tall gate is hung as one, every storey the same way. A gate with another beside it opens from the middle and says so. Pandorical clients draw the single leaf; vanilla clients see the gate the game draws.
+**Sneak and right-click a gate with an empty hand** for the same kind of menu a door has: one leaf from the left post, one from the right, or two meeting in the middle, left and right as you see them. The whole gate is hung at once, every gate beside and above it the same way, and a gate set down against one takes its hinge. A wide gate standing open is hung again once it is shut. Pandorical clients draw the leaves; vanilla clients see the gates the game draws.
 
 ## Turning A Door In Place
 

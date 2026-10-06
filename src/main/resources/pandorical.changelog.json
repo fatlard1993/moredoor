@@ -3,6 +3,17 @@
     "Doors with depth, doors that lock, doors that swing together, and six variants of every door and four of every trapdoor, for every material in the game."
   ],
   "versions": {
+    "1.0.6": [
+      "Wide gates open the way large doors do: their blocks swing out along the leaf.",
+      "An open wide gate's leaf is solid, and clicking it shuts the gate.",
+      "A wide gate stops against a block where its leaf would land, and comes back from one in its arc.",
+      "A row of gates longer than seventeen opens as several gates side by side.",
+      "A whole gate is hung at once, and a gate placed against one takes its hinge.",
+      "A gate whose gates were hung different ways opens as two leaves.",
+      "A gate gone by any means, not only by hand, forgets how it was hung.",
+      "A hung gate turned round by a click keeps its leaf on the same post.",
+      "Full glass and barred doors have no slats across them, and stacked full glass doors no band at the seams."
+    ],
     "1.0.5": [
       "A gate standing beside another can be hung left, right or in the middle, like any other gate.",
       "The menu used to offer it nothing but the middle, for a merged wide gate that nothing ever drew.",

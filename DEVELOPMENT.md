@@ -16,4 +16,6 @@ use the menus. Version targets live in `gradle.properties` (Minecraft, loader, F
 `generate_door_jambs.py`, `generate_recipes.py` and `generate_assets.py`
 cut the mod's art and data out of the vanilla jar. `generate_menu_icons.py` draws the pictures on
 the door, trapdoor and gate menus. All are deterministic; re-run them after a Minecraft version
-bump.
+bump. Most only add and overwrite; `generate_gate_models.py`, `generate_door_models.py` and
+`generate_mega_doors.py` also remove the models of theirs they no longer write, so a renamed or
+dropped model leaves nothing behind.

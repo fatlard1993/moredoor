@@ -6,6 +6,8 @@
     "DoorStackMixin",
     "DoorSwingMixin",
     "FenceConnectionMixin",
+    "GatePlacedMixin",
+    "GateRemovedMixin",
     "GateRedstoneMixin",
     "OpenGateShapeMixin",
     "PropertiesAccessor",
