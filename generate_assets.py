@@ -17,6 +17,8 @@ Usage: python3 generate_assets.py
 import json
 import os
 
+from generate_door_models import full_kind
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 NS = "moredoor-justfatlard"
 ASSETS = os.path.join(HERE, "src/main/resources/assets", NS)
@@ -54,13 +56,19 @@ def write(path, data):
         f.write("\n")
 
 
+def door_parent(name, half, hinge, openness):
+    """Vanilla's shape, or for a full door the same shape without rails: it has none painted."""
+    shape = "%s_%s%s" % (half, hinge, openness)
+    return ("%s:block/template_full_door_" % NS if full_kind(name) else "minecraft:block/door_") + shape
+
+
 def door_models(name):
     """The eight shapes a door is drawn in, each vanilla's wearing our two textures."""
     for half in DOOR_HALVES:
         for hinge in DOOR_HINGES:
             for openness in DOOR_OPEN:
                 write("%s/models/block/%s_%s_%s%s.json" % (ASSETS, name, half, hinge, openness), {
-                    "parent": "minecraft:block/door_%s_%s%s" % (half, hinge, openness),
+                    "parent": door_parent(name, half, hinge, openness),
                     "textures": {
                         "bottom": "%s:block/%s_bottom" % (NS, name),
                         "top": "%s:block/%s_top" % (NS, name),

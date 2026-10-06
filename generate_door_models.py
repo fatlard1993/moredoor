@@ -16,9 +16,24 @@ Usage: python3 generate_door_models.py
 
 import json
 import os
+import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "src/main/resources/assets/minecraft/models/block")
+# The full doors' templates live with the mod's models. Their sheets paint no rails, so a rail
+# box would show the opening on its face and the frame's edge on its inner faces, across it.
+FULL_OUT = os.path.join(HERE, "src/main/resources/assets/moredoor-justfatlard/models/block")
+
+# The variants cut the whole height of the door, by prefix, and what fills them.
+FULL_VARIANTS = {"full_glass_": "glass", "full_barred_": "barred"}
+
+
+def full_kind(door):
+    """'glass' or 'barred' for a full door's name (oak_full_glass_door), None for any other."""
+    for prefix, kind in FULL_VARIANTS.items():
+        if door.endswith("_" + prefix + "door"):
+            return kind
+    return None
 
 # A door leaf lies along z, three pixels deep in x. The wide faces are therefore
 # east and west, and the sheet is painted across them with u running along z and
@@ -81,16 +96,25 @@ def box(texture, x1, x2, y1, y2, z1, z2, flip, edge_uv=None):
     }
 
 
-def leaf(texture, half, flip):
-    """One door leaf: a recessed panel, a frame around it, and a handle on the swinging edge."""
-    # The panel: the full sheet, set back a pixel from both faces.
-    elements = [broad(box(texture, PANEL_INSET, THICK - PANEL_INSET, 0.0, 16.0, 0.0, 16.0, flip))]
+def leaf(texture, half, flip, rails=True):
+    """One door leaf: a recessed panel, a frame around it, and a handle on the swinging edge.
+
+    Without rails the panel runs between the stiles only, and is closed along the door's outer
+    edge, where nothing else covers its end."""
+    if rails:
+        # The panel: the full sheet, set back a pixel from both faces.
+        elements = [broad(box(texture, PANEL_INSET, THICK - PANEL_INSET, 0.0, 16.0, 0.0, 16.0, flip))]
+    else:
+        outer = "up" if half == "top" else "down"
+        elements = [broad(box(texture, PANEL_INSET, THICK - PANEL_INSET, 0.0, 16.0, FRAME, 16.0 - FRAME, flip),
+                          keep=(outer,))]
 
     # The frame: two stiles and two rails at full thickness, so the panel sits in a rebate.
     elements.append(box(texture, 0.0, THICK, 0.0, 16.0, 0.0, FRAME, flip))
     elements.append(box(texture, 0.0, THICK, 0.0, 16.0, 16.0 - FRAME, 16.0, flip))
-    elements.append(box(texture, 0.0, THICK, 0.0, FRAME, FRAME, 16.0 - FRAME, flip))
-    elements.append(box(texture, 0.0, THICK, 16.0 - FRAME, 16.0, FRAME, 16.0 - FRAME, flip))
+    if rails:
+        elements.append(box(texture, 0.0, THICK, 0.0, FRAME, FRAME, 16.0 - FRAME, flip))
+        elements.append(box(texture, 0.0, THICK, 16.0 - FRAME, 16.0, FRAME, 16.0 - FRAME, flip))
 
     # The handle, where the sheet paints it, standing a pixel proud of both faces. It sits
     # on the seam, so each half carries its own part of it: oak paints the knob on the top
@@ -103,15 +127,16 @@ def leaf(texture, half, flip):
     return seamless(elements, half)
 
 
-def broad(panel):
-    """A panel with only its two broad faces.
+def broad(panel, keep=()):
+    """A panel with only its two broad faces, and any of its thin ones named in keep.
 
     Its four thin faces lie in the planes of the frame's own - the stiles' ends, the rails' top
     and bottom - and two faces in one plane flicker against each other. Where there is no frame
     piece they lie on a seam instead. Either way nobody ever sees them.
     """
     for side in ("north", "south", "up", "down"):
-        panel["faces"].pop(side, None)
+        if side not in keep:
+            panel["faces"].pop(side, None)
     return panel
 
 
@@ -136,24 +161,30 @@ def seamless(elements, half, low_stile=True, high_stile=True):
     return elements
 
 
-def build(half, hinge, openness):
+def build(half, hinge, openness, rails=True):
     texture = "#bottom" if half == "bottom" else "#top"
     return {
         "ambientocclusion": False,
         "textures": {"particle": texture},
-        "elements": leaf(texture, half, (hinge == "right") != (openness == "_open")),
+        "elements": leaf(texture, half, (hinge == "right") != (openness == "_open"), rails),
     }
 
 
 if __name__ == "__main__":
-    os.makedirs(OUT, exist_ok=True)
+    # The full doors' eight, under any name they have had.
+    for file in os.listdir(FULL_OUT):
+        if re.match(r"(template_)?full_door_(bottom|top)_.*\.json$", file):
+            os.remove(os.path.join(FULL_OUT, file))
     made = 0
-    for half in ("bottom", "top"):
-        for hinge in ("left", "right"):
-            for openness in ("", "_open"):
-                name = "door_%s_%s%s" % (half, hinge, openness)
-                with open(os.path.join(OUT, name + ".json"), "w") as f:
-                    json.dump(build(half, hinge, openness), f, indent=2)
-                    f.write("\n")
-                made += 1
-    print("wrote %d door models (vanilla's own eight, rebuilt with depth)" % made)
+    for out, prefix, rails in ((OUT, "door", True), (FULL_OUT, "template_full_door", False)):
+        os.makedirs(out, exist_ok=True)
+        for half in ("bottom", "top"):
+            for hinge in ("left", "right"):
+                for openness in ("", "_open"):
+                    name = "%s_%s_%s%s" % (prefix, half, hinge, openness)
+                    with open(os.path.join(out, name + ".json"), "w") as f:
+                        json.dump(build(half, hinge, openness, rails), f, indent=2)
+                        f.write("\n")
+                    made += 1
+    print("wrote %d door models (vanilla's own eight rebuilt with depth, and the full doors' eight)"
+          % made)

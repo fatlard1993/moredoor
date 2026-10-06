@@ -26,15 +26,22 @@ Usage: python3 generate_mega_doors.py [jar]
 import itertools
 import json
 import os
+import re
 import zipfile
 
-from generate_door_models import (EDGE, FRAME, HANDLE_PROUD, HANDLE_U, PANEL_INSET, THICK, broad, face, seamless)
+from generate_door_models import (EDGE, FRAME, HANDLE_PROUD, HANDLE_U, PANEL_INSET, THICK, broad, face,
+                                  full_kind, seamless)
 from generate_door_jambs import find_jar
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(HERE, "src/main/resources/assets")
 MOD_ID = "moredoor-justfatlard"
 TEMPLATES = os.path.join(ASSETS, "minecraft/models/block")
+# The full doors' templates: no rails anywhere, the middle one included, since their sheets paint
+# none. Bars run the sheet's whole height through every leaf. Glass paints the pane's own border
+# on its outer rows, so where one leaf meets the next those rows are left out, as a rail's are.
+FULL_TEMPLATES = os.path.join(ASSETS, MOD_ID, "models/block")
+FULL_PREFIXES = {"barred": "template_full_", "glass": "template_full_glass_"}
 
 # The sheet's interior, between the stiles, which is what stretches across a leaf that has none.
 INNER = (FRAME, 16.0 - FRAME)
@@ -82,18 +89,21 @@ def rows(half, top_rail, bottom_rail):
     return v1, v2
 
 
-def leaf(half, flip, low_stile, high_stile, top_rail, bottom_rail, handle):
+def leaf(half, flip, low_stile, high_stile, top_rail, bottom_rail, handle, full=None):
     # The leaf is drawn from the sheet without its painted handle: a large door has one handle,
     # the knob below, and every leaf's sheet would otherwise show one. Only the knob reads the
     # original, which is where the handle's own pixels are.
     texture = "#bottom_plain" if half == "bottom" else "#top_plain"
-    v1, v2 = rows(half, top_rail, bottom_rail)
+    v1, v2 = (0.0, 16.0) if full == "barred" else rows(half, top_rail, bottom_rail)
     elements = []
 
     # The panel: recessed, the interior of the sheet stretched across whatever width is not stile.
+    # A full door has no rail over the panel's end on the rectangle's outer edge, so it is closed.
+    outer = ("up",) if half == "top" and top_rail else ("down",) if half == "bottom" and bottom_rail else ()
     for z1, z2, u1, u2 in spans(low_stile, high_stile):
+        keep = outer if full and (u1, u2) == INNER else ()
         elements.append(broad(box(texture, PANEL_INSET, THICK - PANEL_INSET, 0.0, 16.0, z1, z2,
-                                  u1, u2, v1, v2, flip)))
+                                  u1, u2, v1, v2, flip), keep=keep))
 
     # Stiles, only on the rectangle's edges.
     if low_stile:
@@ -106,11 +116,11 @@ def leaf(half, flip, low_stile, high_stile, top_rail, bottom_rail, handle):
     # between whatever stiles this leaf has, reading its own rows of the sheet.
     rail_z = (FRAME if low_stile else 0.0, 16.0 - FRAME if high_stile else 16.0)
     rails = []
-    if half == "top":
+    if not full and half == "top":
         rails.append((0.0, FRAME))                       # the middle rail's upper part
         if top_rail:
             rails.append((16.0 - FRAME, 16.0))
-    else:
+    elif not full:
         rails.append((16.0 - FRAME, 16.0))               # the middle rail's lower part
         if bottom_rail:
             rails.append((0.0, FRAME))
@@ -162,7 +172,15 @@ def write(path, model):
         f.write("\n")
 
 
+def prune():
+    """Remove the full doors' mega templates, under any name they have had, before writing."""
+    for file in os.listdir(FULL_TEMPLATES):
+        if re.match(r"(template_)?full_(glass_)?door_mega_.*\.json$", file):
+            os.remove(os.path.join(FULL_TEMPLATES, file))
+
+
 def main():
+    prune()
     templates = 0
     names = []
     for half in ("bottom", "top"):
@@ -173,12 +191,15 @@ def main():
                     name = "door_mega_%s_%s%s_%s" % (half, hinge, openness,
                                                      flags_name(low, high, top, bottom, handle))
                     texture = "#bottom_plain" if half == "bottom" else "#top_plain"
-                    write(os.path.join(TEMPLATES, name + ".json"), {
-                        "ambientocclusion": False,
-                        "textures": {"particle": texture},
-                        "elements": leaf(half, flip, low, high, top, bottom, handle)})
+                    families = [(TEMPLATES, "", None)] + [
+                        (FULL_TEMPLATES, prefix, kind) for kind, prefix in FULL_PREFIXES.items()]
+                    for folder, prefix, kind in families:
+                        write(os.path.join(folder, prefix + name + ".json"), {
+                            "ambientocclusion": False,
+                            "textures": {"particle": texture},
+                            "elements": leaf(half, flip, low, high, top, bottom, handle, kind)})
+                        templates += 1
                     names.append(name)
-                    templates += 1
 
     # Every door's own copies: one line each, naming its sheets.
     doors = []
@@ -195,17 +216,19 @@ def main():
                 doors.append(("minecraft", door, model["textures"]))
     own = os.path.join(ASSETS, MOD_ID, "models/block")
     for file in sorted(os.listdir(own)):
-        if file.endswith("_door_bottom_left.json"):
+        if file.endswith("_door_bottom_left.json") and not file.startswith("template_"):
             door = file[:-len("_bottom_left.json")]
             model = json.load(open(os.path.join(own, file)))
             doors.append((MOD_ID, door, model["textures"]))
 
     copies = 0
     for namespace, door, textures in doors:
+        kind = full_kind(door)
+        template = "%s:block/%s" % (MOD_ID, FULL_PREFIXES[kind]) if kind else "minecraft:block/"
         for name in names:
             plain = "%s:block/plain/%s/%s" % (MOD_ID, namespace, door)
             write(os.path.join(ASSETS, namespace, "models/block", door + name[len("door"):] + ".json"),
-                  {"parent": "minecraft:block/" + name,
+                  {"parent": template + name,
                    "textures": {"bottom": textures["bottom"], "top": textures["top"],
                                 "bottom_plain": plain + "_bottom", "top_plain": plain + "_top"}})
             copies += 1

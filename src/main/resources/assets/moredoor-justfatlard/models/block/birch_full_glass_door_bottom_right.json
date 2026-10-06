@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:block/door_bottom_right",
+  "parent": "moredoor-justfatlard:block/template_full_door_bottom_right",
   "textures": {
     "bottom": "moredoor-justfatlard:block/birch_full_glass_door_bottom",
     "top": "moredoor-justfatlard:block/birch_full_glass_door_top"
