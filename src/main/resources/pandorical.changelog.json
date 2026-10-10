@@ -3,6 +3,9 @@
     "Doors with depth, doors that lock, doors that swing together, and six variants of every door and four of every trapdoor, for every material in the game."
   ],
   "versions": {
+    "1.0.7": [
+      "A Door action menu for the door you are looking at: unlock it, or let players in or keep them out, picked by face."
+    ],
     "1.0.6": [
       "Wide gates open the way large doors do: their blocks swing out along the leaf.",
       "An open wide gate's leaf is solid, and clicking it shuts the gate.",
