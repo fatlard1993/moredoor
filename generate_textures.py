@@ -226,7 +226,7 @@ WINDOW = ((2, 12, 2, 11), None)
 # at the bottom of the next put a five pixel band of timber across the middle of any door built
 # from more than one square - which is most of what these two get used for, and the opposite of
 # what "barred the whole way down" promises. The stiles either side still frame it.
-FULL = ((2, 12, 0, 15), (2, 12, 0, 15))
+FULL = ((3, 12, 0, 15), (3, 12, 0, 15))
 
 # Clear air between the top of an opening and the first cross-brace in it.
 BRACE_GAP = 2
