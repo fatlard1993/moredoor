@@ -104,7 +104,7 @@ Shift-right-click a door with an axe to cycle its hinge and facing without break
 
 ## Pandorical
 
-Moredoor registers its door blocks and the depth models through Pandorical's content sync, and requires Pandorical 15.17 or later on the server.
+Moredoor registers its door blocks and the depth models through Pandorical's content sync, and requires Pandorical on the server.
 
 **The Pandorical mod must be installed client-side** to see the depth, the locks' models, the joined gates and the jambs, and to open the sneak right-click menus for doors, trapdoors and gates. Without it the doors still open, lock and open together, but a client sees them as flat vanilla doors.
 
