@@ -3,6 +3,11 @@
     "Doors with depth, doors that lock, doors that swing together, and six variants of every door and four of every trapdoor, for every material in the game."
   ],
   "versions": {
+    "1.0.11": [
+      "Drop changelog notes for changes nothing in the game shows.",
+      "Doors lock with /doors lock, and an iron ingot locks one only when sneaking, so walking through with iron in hand no longer locks it.",
+      "An iron ingot no longer locks a door; /doors lock and the door's menu do."
+    ],
     "1.0.8": [
       "Full glass and full barred doors have a whole wooden edge again, instead of a stripe of bars or glass painted down it."
     ],
