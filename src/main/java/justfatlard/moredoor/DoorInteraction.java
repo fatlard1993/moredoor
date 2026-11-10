@@ -14,7 +14,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
@@ -94,12 +93,6 @@ public final class DoorInteraction {
 
 		ItemStack held = player.getItemInHand(hand);
 
-		// Sneaking, like every other click that changes the door: a plain click with iron in hand
-		// is somebody walking through who happens to be carrying iron.
-		if (held.is(Items.IRON_INGOT) && player.isSecondaryUseActive()) {
-			return fitLock(serverLevel, opener, locks, pos, state, held);
-		}
-
 		// Working the handle is one thing, changing the door another, and the two part company on a
 		// door left open to everyone: anybody may walk through it, and it still turns and re-hangs
 		// only for the people it belongs to. On an unlocked door there is nothing to refuse, so
@@ -131,20 +124,6 @@ public final class DoorInteraction {
 		// A vanilla client, or one that guessed, may have predicted placing what it holds. Its
 		// stack did not change here; say so, or the hotbar shows one fewer until it next syncs.
 		if (!player.getItemInHand(hand).isEmpty()) opener.containerMenu.sendAllDataToRemote();
-		return InteractionResult.SUCCESS;
-	}
-
-	/** An iron ingot makes a door somebody's. Visually nothing changes; that is the point. */
-	private static InteractionResult fitLock(ServerLevel level, ServerPlayer owner, DoorLocks locks,
-			BlockPos pos, BlockState state, ItemStack ingot) {
-		if (locks.lockAt(DoorBank.footOf(pos, state)) != null) return InteractionResult.PASS;
-
-		locks.lock(owner, level, pos, state);
-		ingot.consume(1, owner);
-
-		level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.8F, 1.4F);
-		owner.sendSystemMessage(Component.translatable("moredoor-justfatlard.locked"));
-
 		return InteractionResult.SUCCESS;
 	}
 
