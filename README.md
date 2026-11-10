@@ -32,9 +32,9 @@ Every door is drawn with depth: a frame standing proud of a recessed panel, and 
 
 ## Locked Doors
 
-Right-click any door with an iron ingot to lock it, the ingot spent. Nothing about it looks different; it opens for its owner and nobody else.
+Sneak and right-click any door with an iron ingot to lock it, the ingot spent; a plain click with one in hand just opens the door. Nothing about it looks different; it opens for its owner and nobody else.
 
-The lock button on the door's menu (sneak and right-click it with an empty hand) does the same for free and goes round three states: **Unlocked**, **Locked**, and **Open to everyone**, where anybody can walk through. Only the owner and operators can change the lock.
+Looking at the door and using `/doors lock` does the same for free, and so does the lock button on the door's menu (sneak and right-click it with an empty hand), which goes round three states: **Unlocked**, **Locked**, and **Open to everyone**, where anybody can walk through. Only the owner and operators can change the lock.
 
 Only the owner, players they have let in, and operators can break, turn or re-hang a locked door, open to everyone or not. The owner lets others in by looking at the door and using `/doors allow` or `/doors deny` (see Commands). Operators are always let through and can use the commands on anybody's door.
 
@@ -104,10 +104,11 @@ The first three act on the door you are looking at, within 6 blocks.
 | --- | --- | --- |
 | `/doors allow <player>` | owner, operators | lets that player through a locked door |
 | `/doors deny <player>` | owner, operators | takes that back |
+| `/doors lock` | anyone | locks the door you are looking at, for free |
 | `/doors unlock` | owner, operators | removes the lock |
 | `/doors hang <pos> <swing>` | operators | hangs the whole door at that position; swing is `left`, `right`, `slide_left`, `slide_right`, `slide_up` or `slide_down` |
 
-With Pandorical's action menus, a "Door" menu offers Unlock, Let in and Keep out as buttons.
+With Pandorical's action menus, a "Door" menu offers Lock, Unlock, Let in and Keep out as buttons.
 
 ## Pandorical
 

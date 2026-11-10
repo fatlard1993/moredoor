@@ -209,6 +209,7 @@
   "block.moredoor-justfatlard.weathered_copper_glass_door": "Weathered Copper Glass Door",
   "block.moredoor-justfatlard.weathered_copper_glass_trapdoor": "Weathered Copper Glass Trapdoor",
   "block.moredoor-justfatlard.weathered_copper_trapdoor": "Weathered Copper Trapdoor",
+  "moredoor-justfatlard.command.already_locked": "That door is already locked.",
   "moredoor-justfatlard.command.allowed": "Let %s player(s) through.",
   "moredoor-justfatlard.command.denied": "Shut out %s player(s).",
   "moredoor-justfatlard.command.no_door": "Look at a door first.",

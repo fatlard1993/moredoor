@@ -94,7 +94,9 @@ public final class DoorInteraction {
 
 		ItemStack held = player.getItemInHand(hand);
 
-		if (held.is(Items.IRON_INGOT) && !player.isSecondaryUseActive()) {
+		// Sneaking, like every other click that changes the door: a plain click with iron in hand
+		// is somebody walking through who happens to be carrying iron.
+		if (held.is(Items.IRON_INGOT) && player.isSecondaryUseActive()) {
 			return fitLock(serverLevel, opener, locks, pos, state, held);
 		}
 

@@ -40,6 +40,8 @@ public final class DoorCommands {
 				.then(Commands.argument("player", GameProfileArgument.gameProfile())
 					.executes(context -> share(context.getSource(),
 						GameProfileArgument.getGameProfiles(context, "player"), false))))
+			.then(Commands.literal("lock")
+				.executes(context -> lock(context.getSource())))
 			.then(Commands.literal("unlock")
 				.executes(context -> unlock(context.getSource())))
 			// For operators and test rigs: hang the door at a position without the menu.
@@ -115,6 +117,33 @@ public final class DoorCommands {
 			? "moredoor-justfatlard.command.allowed"
 			: "moredoor-justfatlard.command.denied", guests.size()), false);
 		return changed;
+	}
+
+	private static int lock(CommandSourceStack source)
+			throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+		ServerPlayer player = source.getPlayerOrException();
+		ServerLevel level = player.level();
+
+		BlockPos door = lookingAt(player, level);
+		if (door == null) {
+			source.sendFailure(Component.translatable("moredoor-justfatlard.command.no_door"));
+			return 0;
+		}
+
+		DoorLocks locks = DoorLocks.get(level);
+		BlockState state = level.getBlockState(door);
+		DoorLocks.Lock lock = locks.lockAt(DoorBank.footOf(door, state));
+
+		if (lock != null) {
+			source.sendFailure(lock.owner().equals(player.getUUID())
+				? Component.translatable("moredoor-justfatlard.command.already_locked")
+				: Component.translatable("moredoor-justfatlard.command.not_yours", lock.ownerName()));
+			return 0;
+		}
+
+		locks.lock(player, level, door, state);
+		source.sendSuccess(() -> Component.translatable("moredoor-justfatlard.locked"), false);
+		return 1;
 	}
 
 	private static int unlock(CommandSourceStack source)

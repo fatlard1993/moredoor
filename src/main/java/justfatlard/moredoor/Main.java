@@ -28,8 +28,9 @@ public class Main implements ModInitializer {
 		if (PandoricalApi.isAvailable()) {
 			syncClientAssets();
 			// The door under the crosshair is still under it with the menu open; letting people
-			// through asks who by face. Locking stays on the door's own screen, a sneak-click away.
+			// through asks who by face.
 			PandoricalApi.actionMenus().suggestMenu(MOD_ID + ":door", "Door", java.util.List.of(
+				justfatlard.pandorical.api.ActionMenuApi.Button.runs("minecraft:iron_ingot", "Lock", "doors lock"),
 				justfatlard.pandorical.api.ActionMenuApi.Button.runs("minecraft:oak_door", "Unlock", "doors unlock"),
 				justfatlard.pandorical.api.ActionMenuApi.Button.runs("minecraft:player_head", "Let in", "doors allow {players}"),
 				justfatlard.pandorical.api.ActionMenuApi.Button.runs("minecraft:skeleton_skull", "Keep out", "doors deny {players}")));
