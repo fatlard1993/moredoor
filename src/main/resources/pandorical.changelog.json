@@ -3,6 +3,9 @@
     "Doors with depth, doors that lock, doors that swing together, and six variants of every door and four of every trapdoor, for every material in the game."
   ],
   "versions": {
+    "1.0.12": [
+      "A demo to play in PvP Dimensions' onboarding."
+    ],
     "1.0.11": [
       "Drop changelog notes for changes nothing in the game shows.",
       "Doors lock with /doors lock, and an iron ingot locks one only when sneaking, so walking through with iron in hand no longer locks it.",
