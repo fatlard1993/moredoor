@@ -64,7 +64,8 @@ public abstract class OpenGateShapeMixin {
 
 	/**
 	 * A wide gate's collision depends on the squares around it, so vanilla must not cache one
-	 * per block state: with a cache it never asks.
+	 * per open block state: with a cache it never asks. Shut states are cached again by
+	 * {@link ShutGateCacheMixin}.
 	 */
 	public boolean hasDynamicShape() {
 		return true;
