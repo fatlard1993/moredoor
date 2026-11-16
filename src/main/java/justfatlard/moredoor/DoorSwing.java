@@ -111,17 +111,19 @@ public final class DoorSwing {
 	 * that the signal has gone. So every open door whose squares still say powered looks at
 	 * home for itself, once a tick; finding no signal there or beside it, it comes back.
 	 *
-	 * <p>Cheap in practice: it runs for doors that are open, sliding and still marked powered,
-	 * which is usually none, and reads the home squares only. A signal changing beside the
-	 * squares the door stands on reaches it the ordinary way, through the neighbour update.
+	 * <p>A door not loaded, or whose home is not, waits until it is: reading it would load its
+	 * chunks every tick. A signal changing beside the squares the door stands on reaches it the
+	 * ordinary way, through the neighbour update.
 	 */
 	private static void watchSignals(ServerLevel level) {
 		DoorSwings swings = DoorSwings.get(level);
 		for (DoorSwings.OpenDoor record : swings.openDoors()) {
 			if (!record.swing().isSlide()) continue;
+			if (!level.hasChunkAt(BlockPos.of(record.origin()))) continue;
 			DoorGroup group = DoorGroup.of(record);
 			List<BlockPos> standing = group.squares(true);
 			if (isMoving(level, standing.get(0))) continue;
+			if (!Loaded.around(level, standing, group.squares(false))) continue;
 			boolean powered = false;
 			for (BlockPos square : standing) {
 				BlockState state = level.getBlockState(square);

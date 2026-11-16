@@ -148,15 +148,18 @@ public final class GateMove {
 	 *
 	 * <p>A gate that has moved is no longer beside the lever that opened it, so the neighbour
 	 * update that would shut it fires at its empty doorway. The gate watches that doorway instead,
-	 * once a tick, and comes back when nothing there is calling for it. Cheap in practice: it reads
-	 * the doorways of open gates whose squares still say powered, which is usually none.
+	 * once a tick, and comes back when nothing there is calling for it. A gate not loaded, or
+	 * whose doorway is not, waits until it is: reading it would load its chunks every tick.
 	 */
 	private static void watchSignals(ServerLevel level) {
 		GateSwings swings = GateSwings.get(level);
 		for (GateSwings.OpenGate open : swings.openGates()) {
+			if (!level.hasChunkAt(BlockPos.of(open.origin()))) continue;
 			GateGroup group = GateGroup.of(open);
+			List<BlockPos> standing = group.squares(true);
+			if (!Loaded.around(level, standing, group.squares(false))) continue;
 			boolean powered = false;
-			for (BlockPos square : group.squares(true)) {
+			for (BlockPos square : standing) {
 				BlockState there = level.getBlockState(square);
 				powered |= there.hasProperty(FenceGateBlock.POWERED) && there.getValue(FenceGateBlock.POWERED);
 			}
