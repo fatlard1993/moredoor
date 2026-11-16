@@ -4,7 +4,11 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 
-/** Whether squares can be read without loading anything: every chunk they or their neighbours stand in is in memory. */
+/**
+ * Whether squares and the signals reaching them can be read without loading anything: every chunk
+ * within two blocks is in memory. A signal can come through a block beside a square, which reads
+ * that block's own neighbours.
+ */
 final class Loaded {
 	private Loaded() {}
 
@@ -19,6 +23,6 @@ final class Loaded {
 				maxZ = Math.max(maxZ, square.getZ());
 			}
 		}
-		return minX > maxX || level.hasChunksAt(minX - 1, minZ - 1, maxX + 1, maxZ + 1);
+		return minX > maxX || level.hasChunksAt(minX - 2, minZ - 2, maxX + 2, maxZ + 2);
 	}
 }
