@@ -3,7 +3,7 @@
   "id": "moredoor-justfatlard",
   "version": "${version}",
   "name": "Moredoor",
-  "description": "Doors with depth, doors that lock, doors that swing together, and six variants of every door (four of every trapdoor) for every material",
+  "description": "Doors with depth, doors that lock, and doors that swing together",
   "authors": [
     "justfatlard"
   ],
