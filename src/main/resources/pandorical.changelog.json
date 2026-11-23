@@ -3,6 +3,9 @@
     "Doors with depth, doors that lock, doors that swing together, and six variants of every door and four of every trapdoor, for every material in the game."
   ],
   "versions": {
+    "1.0.14": [
+      "Describes itself in one short line of what it adds."
+    ],
     "1.0.13": [
       "Open gates and sliding doors in unloaded chunks wait to be loaded instead of loading their chunks every tick.",
       "Shut fence gates keep vanilla's cached shapes; only open ones are worked out from their neighbours.",
